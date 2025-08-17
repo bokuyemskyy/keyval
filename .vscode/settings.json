@@ -1,0 +1,12 @@
+{
+    "clangd.enable": false,
+    "C_Cpp.intelliSenseEngine": "enabled",
+    "files.associations": {
+        "optional": "cpp",
+        "array": "cpp",
+        "any": "cpp",
+        "string_view": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
+    }
+}
