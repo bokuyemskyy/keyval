@@ -29,7 +29,7 @@ std::string Protocol::handle(const std::string &request)
         auto value = m_database.get(key);
         if (value.has_value())
         {
-            return *value;
+            return *value + "\n";
         }
         else
         {
