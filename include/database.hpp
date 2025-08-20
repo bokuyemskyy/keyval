@@ -5,6 +5,7 @@
 #include <unordered_map>
 class Database
 {
+
 public:
   void set(const std::string &key, const std::string &value)
   {
