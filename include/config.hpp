@@ -36,6 +36,10 @@ private:
             loadFile(argv[i]);
             i++;
         }
+        else
+        {
+            Logger::log(LogLevel::WARN, "No config file specified.");
+        }
         // all the following ones
         for (; i < argc; i++)
         {
@@ -66,7 +70,7 @@ private:
             file.open(path);
             if (!file)
             {
-                Logger::log(LogLevel::WARN, "Config file not found. Proceeding.");
+                Logger::log(LogLevel::WARN, "Config file not found.");
                 return;
             }
             in = &file;
