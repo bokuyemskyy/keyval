@@ -4,6 +4,7 @@
 
 #include "logger.hpp"
 #include <assert.h>
+#include <unordered_map>
 
 class Config
 {

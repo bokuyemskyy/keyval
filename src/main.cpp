@@ -1,10 +1,11 @@
+#include "app_info.hpp"
+#include "config.hpp"
 #include "database.hpp"
 #include "protocol.hpp"
 #include "server.hpp"
-#include "config.hpp"
-#include "app_info.hpp"
 
 #include <csignal>
+#include <format>
 
 Server *g_server = nullptr;
 
@@ -14,6 +15,7 @@ void handle_sigint(int)
   if (g_server)
     g_server->stop();
 }
+
 int main(int argc, char **argv)
 {
   try

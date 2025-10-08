@@ -9,7 +9,7 @@ SRCS := $(wildcard $(SRC_DIR)/*.cpp)
 OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
 DEPS := $(OBJS:.o=.d)
 
-TARGET := $(BIN_DIR)/sqrl-server
+TARGET := $(BIN_DIR)/keyval-server
 
 all: $(OBJ_DIR) $(BIN_DIR) $(TARGET)
 

@@ -8,9 +8,9 @@
 
 namespace AppInfo
 {
-  inline constexpr auto Name = "Squirrel";
-  inline constexpr auto Version = "0.1.0";
-  inline constexpr auto Website = "https://github.com/bokuyemskyy/squirrel";
+  inline constexpr auto Name = "Keyval";
+  inline constexpr auto Version = "0.1.1";
+  inline constexpr auto Website = "https://github.com/bokuyemskyy/keyval";
 
 #ifdef __x86_64__
   inline constexpr auto Arch = "x86_64";
@@ -22,24 +22,13 @@ namespace AppInfo
 
 void printBanner(const Config &config)
 {
-  std::array<std::string, 17> logo = {
-      "                       ▓▓  ▓▓         ",
-      "     ▓▓▓▓▓▓▓▓         ▓▓▓▓▒▒▓▓        ",
-      "  ▓▓▓▓▒▒▒▒▒▒▒▒▓▓      ▓▓░░  ░░▓▓      ",
-      "    ▓▓░░▒▒░░▒▒▒▒▓▓    ▓▓░░▓▓  ░░▓▓    ",
-      "      ▓▓  ▒▒▒▒▒▒▓▓    ▓▓░░░░░░░░░░▓▓  ",
-      "        ▓▓░░▒▒░░▒▒▓▓▓▓░░░░░░░░░░  ▒▒  ",
-      "          ▓▓  ▒▒▒▒▒▒▓▓░░░░░░▓▓▓▓▒▒    ",
-      "          ▓▓░░▒▒▒▒▓▓░░░░▒▒▓▓          ",
-      "        ▓▓░░▒▒░░▓▓░░░░░░░░░░▓▓▓▓▒▒    ",
-      "      ▓▓  ▒▒▒▒▓▓░░░░░░░░░░░░░░▓▓▓▓    ",
-      "    ▓▓░░▒▒░░▓▓░░░░░░░░░░░░  ▓▓▓▓      ",
-      "    ▓▓░░▒▒▒▒▓▓░░░░▒▒░░░░  ▓▓          ",
-      "  ▓▓  ▒▒▒▒▓▓░░░░░░░░▒▒  ▓▓            ",
-      "    ▓▓░░▒▒▓▓░░░░░░░░▒▒  ▓▓▓▓          ",
-      "    ▓▓░░▒▒▓▓░░░░░░▒▒▒▒▒▒▓▓▒▒▒▒        ",
-      "      ▓▓  ▓▓░░░░░░░░░░░░░░▓▓▓▓        ",
-      "        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓          "};
+  std::array<std::string, 6> logo = {
+      "                                   ",
+      "            .--.                   ",
+      "           /.-. '----------.       ",
+      "           \\'-' .--\"--\"\"-\"-'       ",
+      "            '--'                   ",
+      "                                   "};
 
   std::vector<std::string> info = {
       std::format("{} {} {}", AppInfo::Name, AppInfo::Version, AppInfo::Arch),
@@ -47,15 +36,13 @@ void printBanner(const Config &config)
       std::format("PID: {}", getpid()),
       std::format("{}", AppInfo::Website)};
 
-  std::cout << "\n";
   for (size_t i = 0; i < logo.size(); i++)
   {
     std::cout << logo[i];
-    if (i > 2 && i - 3 < info.size())
+    if (i - 1 < info.size())
     {
-      std::cout << "  " << info[i - 3];
+      std::cout << "  " << info[i - 1];
     }
     std::cout << "\n";
   }
-  std::cout << "\n";
 }
