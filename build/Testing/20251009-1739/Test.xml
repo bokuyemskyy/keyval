@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20251009-1739-Experimental"
+	Name="(empty)"
+	Generator="ctest-3.31.6"
+	CompilerName=""
+	CompilerVersion=""
+	OSName="Linux"
+	Hostname="arch"
+	OSRelease="6.16.10-arch1-1"
+	OSVersion="#1 SMP PREEMPT_DYNAMIC Thu, 02 Oct 2025 19:26:36 +0000"
+	OSPlatform="x86_64"
+	Is64Bits="1"
+	VendorString="GenuineIntel"
+	VendorID="Intel Corporation"
+	FamilyID="6"
+	ModelID="165"
+	ModelName="Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz"
+	ProcessorCacheSize="12288"
+	NumberOfLogicalCPU="12"
+	NumberOfPhysicalCPU="6"
+	TotalVirtualMemory="8191"
+	TotalPhysicalMemory="15801"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="4200.07"
+	>
+	<Testing>
+		<StartDateTime>Oct 09 20:25 CEST</StartDateTime>
+		<StartTestTime>1760034311</StartTestTime>
+		<TestList/>
+		<EndDateTime>Oct 09 20:25 CEST</EndDateTime>
+		<EndTestTime>1760034311</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>
