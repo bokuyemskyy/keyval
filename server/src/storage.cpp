@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <mutex>
 
+#include "regex.hpp"
+
 Storage::Storage(size_t db_count) : m_databases(db_count) {}
 
 bool Storage::isExpired(const Value &val) const
@@ -92,7 +94,7 @@ std::vector<std::string> Storage::keys(size_t db, const std::string &pattern)
 {
     std::shared_lock lock(m_mutex);
     std::vector<std::string> result;
-    std::regex regex_pattern(pattern);
+    std::regex regex_pattern(globToRegex(pattern));
     for (auto &[key, val] : m_databases[db])
     {
         if (!isExpired(val) && std::regex_match(key, regex_pattern))
