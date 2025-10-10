@@ -1,42 +1,114 @@
 #include "common/protocol.hpp"
+
 #include <sstream>
-#include <algorithm>
-#include <cctype>
+#include <stdexcept>
+#include <variant>
 
-Command Protocol::deserialize(const std::string &data)
+Request Protocol::deserializeRequest(const std::string &input)
 {
-    Command cmd;
-    std::istringstream stream(data);
-    std::string token;
+    std::vector<std::string> tokens;
 
-    if (!(stream >> token))
-    {
-        throw std::runtime_error("Empty command");
-    }
+    if (input.empty())
+        throw std::runtime_error("Empty request");
 
-    std::transform(token.begin(), token.end(), token.begin(),
-                   [](unsigned char c)
-                   { return std::toupper(c); });
-    cmd.name = token;
+    if (input[0] == '*')
+        tokens = parseArray(input);
+    else
+        tokens = parseInline(input);
 
-    while (stream >> token)
-    {
-        cmd.args.push_back(token);
-    }
+    if (tokens.empty())
+        throw std::runtime_error("Invalid request");
 
-    return cmd;
+    return {tokens[0], std::vector<std::string>(tokens.begin() + 1, tokens.end())};
 }
 
-std::string Protocol::serialize(const Command &cmd)
+std::vector<std::string> Protocol::parseArray(const std::string &input)
 {
-    std::ostringstream stream;
-    stream << cmd.name;
+    std::vector<std::string> result;
+    std::istringstream stream(input);
+    std::string line;
 
-    for (const auto &arg : cmd.args)
+    getlineCRLF(stream, line);
+    if (line.empty() || line[0] != '*')
+        throw std::runtime_error("Invalid array request");
+
+    int count = std::stoi(line.substr(1));
+
+    for (int i = 0; i < count; i++)
     {
-        stream << " " << arg;
-    }
+        getlineCRLF(stream, line);
+        if (line.empty() || line[0] != '$')
+            throw std::runtime_error("Expected bulk string");
 
-    stream << "\n";
-    return stream.str();
+        int len = std::stoi(line.substr(1));
+        if (len < 0)
+        {
+            result.push_back("");
+            continue;
+        }
+
+        std::string value(len, '\0');
+        stream.read(&value[0], len);
+        stream.ignore(2);
+        result.push_back(value);
+    }
+    return result;
+}
+
+std::vector<std::string> Protocol::parseInline(const std::string &input)
+{
+    std::vector<std::string> result;
+    std::istringstream stream(input);
+    std::string token;
+    while (stream >> token)
+        result.push_back(token);
+    return result;
+}
+
+void Protocol::getlineCRLF(std::istringstream &stream, std::string &line)
+{
+    std::getline(stream, line);
+    if (!line.empty() && line.back() == '\r')
+        line.pop_back();
+}
+
+std::string Protocol::serializeResponse(const Response &response)
+{
+    switch (response.type)
+    {
+    case ResponseType::SIMPLE_STRING:
+        if (auto str = std::get_if<std::string>(&response.value))
+            return "+" + *str + "\r\n";
+        break;
+
+    case ResponseType::ERROR:
+        if (auto str = std::get_if<std::string>(&response.value))
+            return "-" + *str + "\r\n";
+        break;
+
+    case ResponseType::INTEGER:
+        if (auto val = std::get_if<long long>(&response.value))
+            return ":" + std::to_string(*val) + "\r\n";
+        break;
+
+    case ResponseType::BULK_STRING:
+        if (auto val = std::get_if<std::string>(&response.value))
+            return "$" + std::to_string(val->size()) + "\r\n" + *val + "\r\n";
+        break;
+
+    case ResponseType::ARRAY:
+        if (auto arr = std::get_if<std::vector<std::shared_ptr<Response>>>(&response.value))
+        {
+            std::string out = "*" + std::to_string(arr->size()) + "\r\n";
+            for (const auto &el : *arr)
+                out += serializeResponse(*el);
+            return out;
+        }
+        break;
+    case ResponseType::SHUTDOWN:
+        return "";
+    case ResponseType::NIL:
+        return "$-1\r\n";
+    }
+    return "-ERR unknown response type\r\n";
 }
