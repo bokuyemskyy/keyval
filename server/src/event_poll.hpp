@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <fcntl.h>
+#include <mutex>
 
 class EventPoll
 {
@@ -29,12 +30,14 @@ public:
     const std::vector<Event> &events() const;
 
 private:
+    int m_max_events;
     int m_epoll_fd;
     int m_event_fd;
-    int m_max_events;
     std::vector<struct epoll_event> m_epoll_events;
     std::vector<Event> m_active_events;
     std::unordered_map<int, uint32_t> m_fd_events;
+
+    mutable std::mutex m_mutex;
 
     void setNonblocking(int fd);
 };
