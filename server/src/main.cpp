@@ -3,6 +3,7 @@
 #include "config.hpp"
 #include "storage.hpp"
 #include "server.hpp"
+#include "command_registry.hpp"
 
 #include <csignal>
 #include <format>
@@ -24,7 +25,10 @@ int main(int argc, char **argv)
 
     Config config(argc, argv);
     Storage storage;
+
     CommandHandler handler(storage);
+    registerCommands(handler);
+
     Server server(config, handler);
 
     g_server = &server;

@@ -28,6 +28,9 @@ public:
     bool isAuthenticated() const noexcept { return m_authenticated; }
     const std::string &user() const noexcept { return m_user; }
 
+    void requestShutdown() noexcept { m_shutdown_requested = true; }
+    bool isShutdownRequested() const noexcept { return m_shutdown_requested; }
+
     std::chrono::steady_clock::time_point connectedAt() const noexcept { return m_connected_at; }
 
 private:
@@ -36,4 +39,6 @@ private:
     bool m_authenticated;
     std::string m_user;
     std::chrono::steady_clock::time_point m_connected_at;
+
+    bool m_shutdown_requested{false};
 };

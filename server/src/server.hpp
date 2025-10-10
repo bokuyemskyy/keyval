@@ -19,7 +19,6 @@ public:
 
     void addSession(int fd, const Session &session);
     void removeSession(int fd);
-    bool hasSession(int fd) const;
     Session &getSession(int fd);
 
 private:
