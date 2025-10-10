@@ -13,6 +13,12 @@
 },
 {
   "directory": "/home/amon/Code/keyval/build",
+  "command": "/usr/bin/g++ -I/home/amon/Code/keyval/server/src -I/home/amon/Code/keyval/common/include  -Wall -g -std=gnu++23 -o server/CMakeFiles/server.dir/src/command_registry.cpp.o -c /home/amon/Code/keyval/server/src/command_registry.cpp",
+  "file": "/home/amon/Code/keyval/server/src/command_registry.cpp",
+  "output": "server/CMakeFiles/server.dir/src/command_registry.cpp.o"
+},
+{
+  "directory": "/home/amon/Code/keyval/build",
   "command": "/usr/bin/g++ -I/home/amon/Code/keyval/server/src -I/home/amon/Code/keyval/common/include  -Wall -g -std=gnu++23 -o server/CMakeFiles/server.dir/src/event_poll.cpp.o -c /home/amon/Code/keyval/server/src/event_poll.cpp",
   "file": "/home/amon/Code/keyval/server/src/event_poll.cpp",
   "output": "server/CMakeFiles/server.dir/src/event_poll.cpp.o"

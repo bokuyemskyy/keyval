@@ -170,6 +170,13 @@ build server/CMakeFiles/server.dir/src/command_handler.cpp.o: CXX_COMPILER__serv
   OBJECT_DIR = server/CMakeFiles/server.dir
   OBJECT_FILE_DIR = server/CMakeFiles/server.dir/src
 
+build server/CMakeFiles/server.dir/src/command_registry.cpp.o: CXX_COMPILER__server_unscanned_Debug /home/amon/Code/keyval/server/src/command_registry.cpp || cmake_object_order_depends_target_server
+  DEP_FILE = server/CMakeFiles/server.dir/src/command_registry.cpp.o.d
+  FLAGS = -Wall -g -std=gnu++23
+  INCLUDES = -I/home/amon/Code/keyval/server/src -I/home/amon/Code/keyval/common/include
+  OBJECT_DIR = server/CMakeFiles/server.dir
+  OBJECT_FILE_DIR = server/CMakeFiles/server.dir/src
+
 build server/CMakeFiles/server.dir/src/event_poll.cpp.o: CXX_COMPILER__server_unscanned_Debug /home/amon/Code/keyval/server/src/event_poll.cpp || cmake_object_order_depends_target_server
   DEP_FILE = server/CMakeFiles/server.dir/src/event_poll.cpp.o.d
   FLAGS = -Wall -g -std=gnu++23
@@ -206,7 +213,7 @@ build server/CMakeFiles/server.dir/src/storage.cpp.o: CXX_COMPILER__server_unsca
 #############################################
 # Link the executable server/server
 
-build server/server: CXX_EXECUTABLE_LINKER__server_Debug server/CMakeFiles/server.dir/src/command_handler.cpp.o server/CMakeFiles/server.dir/src/event_poll.cpp.o server/CMakeFiles/server.dir/src/main.cpp.o server/CMakeFiles/server.dir/src/server.cpp.o server/CMakeFiles/server.dir/src/storage.cpp.o | common/libcommon.a || common/libcommon.a
+build server/server: CXX_EXECUTABLE_LINKER__server_Debug server/CMakeFiles/server.dir/src/command_handler.cpp.o server/CMakeFiles/server.dir/src/command_registry.cpp.o server/CMakeFiles/server.dir/src/event_poll.cpp.o server/CMakeFiles/server.dir/src/main.cpp.o server/CMakeFiles/server.dir/src/server.cpp.o server/CMakeFiles/server.dir/src/storage.cpp.o | common/libcommon.a || common/libcommon.a
   DEP_FILE = server/CMakeFiles/server.dir/link.d
   FLAGS = -Wall -g
   LINK_FLAGS = -Wl,--dependency-file=server/CMakeFiles/server.dir/link.d
