@@ -1,4 +1,5 @@
 #include "event_poll.hpp"
+#include <mutex>
 
 EventPoll::EventPoll(int max_events)
     : m_max_events(max_events),
@@ -31,6 +32,7 @@ void EventPoll::setNonblocking(int fd)
 
 void EventPoll::addFd(int fd, uint32_t events)
 {
+    std::unique_lock lock(m_mutex);
     setNonblocking(fd);
 
     struct epoll_event ev;
@@ -44,6 +46,7 @@ void EventPoll::addFd(int fd, uint32_t events)
 
 void EventPoll::modifyFd(int fd, uint32_t events)
 {
+    std::unique_lock lock(m_mutex);
     struct epoll_event ev;
     ev.events = events;
     ev.data.fd = fd;
@@ -55,6 +58,7 @@ void EventPoll::modifyFd(int fd, uint32_t events)
 
 void EventPoll::removeFd(int fd)
 {
+    std::unique_lock lock(m_mutex);
     epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
     m_fd_events.erase(fd);
     close(fd);
