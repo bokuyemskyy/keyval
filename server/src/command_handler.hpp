@@ -1,4 +1,5 @@
 #pragma once
+#include "commands/icommand.hpp"
 #include "common/protocol.hpp"
 #include "storage.hpp"
 #include <string>
@@ -6,16 +7,17 @@
 
 class CommandHandler
 {
-    Storage &storage;
 
 public:
-    explicit CommandHandler(Storage &db);
-    std::string handle(const Command &cmd, Session &session);
+    explicit CommandHandler(Storage &storage);
+    Response handle(const Request &request, Session &session);
+    void registerCommand(const std::string &command_name, std::unique_ptr<ICommand> command)
+    {
+        m_commands[command_name] = std::move(command);
+    }
 
 private:
-    std::string handlePing(const Command &cmd, Session &session);
-    std::string handleEcho(const Command &cmd, Session &session);
-    std::string handleSet(const Command &cmd, Session &session);
-    std::string handleGet(const Command &cmd, Session &session);
-    std::string handleExists(const Command &cmd, Session &session);
+    Storage &m_storage;
+
+    std::unordered_map<std::string, std::unique_ptr<ICommand>> m_commands;
 };
