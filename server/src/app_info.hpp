@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
+#include <array>
+#include <format>
 
 #include "config.hpp"
 
