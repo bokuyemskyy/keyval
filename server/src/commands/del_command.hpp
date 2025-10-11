@@ -9,6 +9,6 @@ public:
         if (request.args.size() != 1)
             return Response{ResponseType::ERROR, "ERR wrong number of arguments for 'DEL'"};
         int result = storage.del(session.db(), request.args[0]);
-        return Response{ResponseType::INTEGER, std::to_string(result)};
+        return Response{ResponseType::INTEGER, result};
     }
 };
