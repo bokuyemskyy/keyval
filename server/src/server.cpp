@@ -8,9 +8,10 @@
 
 #include <array>
 #include <cstring>
+#include <mutex>
 #include <variant>
 
-#include "event_poll.hpp"
+// #include "event_poll.hpp"
 #include "protocol.hpp"
 #include "socket.hpp"
 
@@ -55,7 +56,7 @@ void Server::start() {
                     accept(listen_socket.fd(), reinterpret_cast<sockaddr*>(&client_address), &client_len);
 
                 if (client_socket_fd >= 0) {
-                    poll.addFd(client_socket_fd, EPOLLIN | EPOLLET);
+                    poll.addFd(client_socket_fd, EPOLLIN);
 
                     Session session(client_socket_fd);
                     addSession(client_socket_fd, session);  // track session

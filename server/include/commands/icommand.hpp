@@ -6,6 +6,7 @@
 
 class ICommand {
    public:
-    virtual ~ICommand()                                                                  = default;
+    virtual ~ICommand() = default;
+
     virtual Response execute(const Request& request, Session& session, Storage& storage) = 0;
 };

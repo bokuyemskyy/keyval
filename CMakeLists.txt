@@ -9,7 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BUILD_TESTS "Build unit tests" ON)
 
-add_subdirectory(lib/poller)
+add_subdirectory(lib/poll)
 add_subdirectory(lib/protocol)
 add_subdirectory(server)
 add_subdirectory(client)
