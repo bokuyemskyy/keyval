@@ -50,7 +50,7 @@ class Storage {
     bool rename(size_t db, const std::string& old_key, const std::string& new_key);
 
    private:
-    enum class ValueType {
+    enum class ValueType : std::uint8_t {
         STRING,
         LIST,
         SET
@@ -65,7 +65,7 @@ class Storage {
     using Database = std::unordered_map<std::string, Value>;
 
     std::vector<Database>     m_databases;
-    size_t                    m_current_db;
+    size_t                    m_current_db = 0;
     mutable std::shared_mutex m_mutex;
 
     bool isExpired(const Value& val) const;

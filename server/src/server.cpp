@@ -2,7 +2,6 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -11,7 +10,7 @@
 #include <mutex>
 #include <variant>
 
-// #include "event_poll.hpp"
+#include "event_poll.hpp"
 #include "protocol.hpp"
 #include "socket.hpp"
 
@@ -40,13 +39,13 @@ void Server::start() {
     listen_socket.listen();
 
     EventPoll poll;
-    poll.addFd(listen_socket.fd(), EPOLLIN);
+    poll.addFd(listen_socket.fd(), PollEvent::Read);
 
     Logger::log(LogLevel::INFO, "Ready to accept TCP connections.");
 
     m_running = true;
     while (m_running) {
-        poll.waitEvents(-1);
+        poll.wait(-1);
         for (const auto& ev : poll.events()) {
             if (ev.fd == listen_socket.fd())  // new connection
             {
@@ -56,7 +55,7 @@ void Server::start() {
                     accept(listen_socket.fd(), reinterpret_cast<sockaddr*>(&client_address), &client_len);
 
                 if (client_socket_fd >= 0) {
-                    poll.addFd(client_socket_fd, EPOLLIN);
+                    poll.addFd(client_socket_fd, PollEvent::Read);
 
                     Session session(client_socket_fd);
                     addSession(client_socket_fd, session);  // track session
