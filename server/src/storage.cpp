@@ -2,9 +2,9 @@
 
 #include <algorithm>
 #include <chrono>
+#include <climits>
 #include <mutex>
 #include <regex>
-#include <thread>
 
 #include "regex.hpp"
 

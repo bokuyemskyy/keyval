@@ -3,15 +3,10 @@
 #include <chrono>
 #include <cstddef>
 #include <string>
-#include <unordered_map>
 
 class Session {
    public:
-    Session(int fd = -1) : m_fd(fd), m_db(0), m_authenticated(false) {
-        m_connected_at = std::chrono::steady_clock::now();
-    }
-
-    int fd() const noexcept { return m_fd; }
+    Session() { m_connected_at = std::chrono::steady_clock::now(); }
 
     void   setDb(size_t db) noexcept { m_db = db; }
     size_t db() const noexcept { return m_db; }
@@ -30,9 +25,8 @@ class Session {
     std::chrono::steady_clock::time_point connectedAt() const noexcept { return m_connected_at; }
 
    private:
-    int                                   m_fd;
-    size_t                                m_db;
-    bool                                  m_authenticated;
+    size_t                                m_db{};
+    bool                                  m_authenticated{};
     std::string                           m_user;
     std::chrono::steady_clock::time_point m_connected_at;
 
