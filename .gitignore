@@ -1,6 +1,7 @@
 /.vscode/
+/.cache/
 /build/
-1
+dump.rdb
 
 # Prerequisites
 *.d
