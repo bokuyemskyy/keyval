@@ -1,0 +1,35 @@
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  cert-*,
+  -cert-int09-c,
+  -cert-err58-cpp,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-special-member-functions,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  -performance-avoid-endl
+  readability-*,
+  -readability-braces-around-statements,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-enum-initial-value,
+  -readability-isolate-declaration,
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  -misc-use-internal-linkage,
+  -misc-no-recursion,
+  -misc-redundant-expression,
+  -misc-const-correctness
+  portability-*
+CheckOptions:
+  - key: clang-tidy.ModularCheck.UseModules
+    value: false
