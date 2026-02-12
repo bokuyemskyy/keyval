@@ -33,8 +33,10 @@ class EventPoll {
     const std::vector<PollEventEntry>& events() const;
 
    private:
+    int m_max_events;
+
     class Impl;
-    std::unique_ptr<Impl> pimpl;
+    std::unique_ptr<Impl> m_pimpl;
 
     void setNonblocking(int fd);
 };
