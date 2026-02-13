@@ -9,7 +9,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BUILD_TESTS "Build unit tests" ON)
 
-add_subdirectory(lib/network)
+include(FetchContent)
+FetchContent_Declare(
+  socketpoll
+  GIT_REPOSITORY https://github.com/bokuyemskyy/socketpoll.git
+  GIT_TAG        main
+)
+FetchContent_MakeAvailable(socketpoll)
+
 add_subdirectory(lib/protocol)
 add_subdirectory(server)
 add_subdirectory(client)
