@@ -6,19 +6,19 @@
 #ifdef _WIN32
 #include <BaseTsd.h>
 #include <winsock2.h>
-typedef SSIZE_T socket_size_t;
-typedef SOCKET  socket_t;
-#define INVALID_SOCKET_FD INVALID_SOCKET
+using socket_size_t                         = SSIZE_T;
+using socket_t                              = SOCKET;
+inline constexpr socket_t INVALID_SOCKET_FD = INVALID_SOCKET;
 #else
 #include <sys/socket.h>
 #include <sys/types.h>
-typedef ssize_t socket_size_t;
-typedef int     socket_t;
-#define INVALID_SOCKET_FD -1
+using socket_size_t                         = ssize_t;
+using socket_t                              = int;
+inline constexpr socket_t INVALID_SOCKET_FD = -1;
 #endif
 
 class Socket {
-   public:
+  public:
     Socket();
     explicit Socket(socket_t fd);
     ~Socket();
@@ -48,6 +48,6 @@ class Socket {
     socket_size_t send(const void* data, size_t size);
     socket_size_t send(const std::string& data);
 
-   private:
+  private:
     socket_t m_fd;
 };

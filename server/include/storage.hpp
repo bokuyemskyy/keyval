@@ -57,9 +57,9 @@ class Storage {
     };
 
     struct Value {
-        ValueType                                                                          type;
-        std::variant<std::string, std::list<std::string>, std::unordered_set<std::string>> data;
-        time_t                                                                             expire_time = 0;
+        ValueType                                                                          m_type;
+        std::variant<std::string, std::list<std::string>, std::unordered_set<std::string>> m_data;
+        time_t                                                                             m_expire_time = 0;
     };
 
     using Database = std::unordered_map<std::string, Value>;
@@ -68,5 +68,5 @@ class Storage {
     size_t                    m_current_db = 0;
     mutable std::shared_mutex m_mutex;
 
-    bool isExpired(const Value& val) const;
+    static bool isExpired(const Value& val);
 };

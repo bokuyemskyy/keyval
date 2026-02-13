@@ -2,11 +2,13 @@
 #include "icommand.hpp"
 
 class FlushAllCommand : public ICommand {
-   public:
-    Response execute(const Request& request, Session& session, Storage& storage) override final {
-        if (!request.args.empty()) return Response{ResponseType::ERR, "ERR wrong number of arguments for 'FLUSHALL'"};
+  public:
+    Response execute(const Request& request, Session& session, Storage& storage) final {
+        if (!request.m_args.empty())
+            return Response{.m_type = ResponseType::ERR, .m_value = "ERR wrong number of arguments for 'FLUSHALL'"};
 
         storage.flushall();
-        return Response{ResponseType::SIMPLE_STRING, "OK"};
+
+        return Response{.m_type = ResponseType::SIMPLE_STRING, .m_value = "OK"};
     }
 };

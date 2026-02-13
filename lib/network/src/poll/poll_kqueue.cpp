@@ -1,9 +1,10 @@
-#include <sys/event.h>
-#include <unistd.h>
-
-#include <mutex>
+#if defined(__APPLE__) || defined(__FreeBSD__)
 
 #include "event_poll.hpp"
+
+#include <mutex>
+#include <sys/event.h>
+#include <unistd.h>
 
 struct EventPoll::Impl {
     socket_t m_kqueue_fd;
@@ -15,17 +16,22 @@ struct EventPoll::Impl {
     Impl(int max_events) : m_kqueue_fd(kqueue()) { m_kernel_events.reserve(max_events); }
 
     ~Impl() {
-        if (m_kqueue_fd != INVALID_SOCKET_FD) close(m_kqueue_fd);
+        if (m_kqueue_fd != INVALID_SOCKET_FD)
+            close(m_kqueue_fd);
     }
 
     static short toNative(PollEvent event) {
-        if (event & PollEvent::Read) return EVFILT_READ;
-        if (event & PollEvent::Write) return EVFILT_WRITE;
+        if ((event & PollEvent::READ) != 0)
+            return EVFILT_READ;
+        if ((event & PollEvent::WRITE) != 0)
+            return EVFILT_WRITE;
         throw std::runtime_error("kqueue event " + std::to_string(event) + " is not implemented");
     }
     static PollEvent fromNative(short native) {
-        if (native == EVFILT_READ) return PollEvent::Read;
-        if (native == EVFILT_WRITE) return PollEvent::Write;
+        if (native == EVFILT_READ)
+            return PollEvent::READ;
+        if (native == EVFILT_WRITE)
+            return PollEvent::WRITE;
         throw std::runtime_error("kqueue event " + std::to_string(native) + " is not implemented");
     }
 };
@@ -38,10 +44,10 @@ void EventPoll::addFd(socket_t fd, PollEvent event) {
     struct kevent                changes[2];
     int                          n = 0;
 
-    if (event & PollEvent::Read) {
+    if ((event & PollEvent::READ) != 0) {
         EV_SET(&changes[n++], fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, (void*)(intptr_t)fd);
     }
-    if (event & PollEvent::Write) {
+    if ((event & PollEvent::WRITE) != 0) {
         EV_SET(&changes[n++], fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, (void*)(intptr_t)fd);
     }
 
@@ -56,13 +62,13 @@ void EventPoll::modifyFd(socket_t fd, PollEvent event) {
     struct kevent changes[2];
     int           n = 0;
 
-    if (event & PollEvent::Read) {
+    if (event & PollEvent::READ) {
         EV_SET(&changes[n++], fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, (void*)(intptr_t)fd);
     } else {
         EV_SET(&changes[n++], fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
     }
 
-    if (event & PollEvent::Write) {
+    if (event & PollEvent::WRITE) {
         EV_SET(&changes[n++], fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, (void*)(intptr_t)fd);
     } else {
         EV_SET(&changes[n++], fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
@@ -96,7 +102,8 @@ void EventPoll::wait(int timeout_ms) {
 
     int n = kevent(m_pimpl->m_kqueue_fd, NULL, 0, m_pimpl->m_kernel_events.data(), m_max_events, timeout_ptr);
     if (n == -1) {
-        if (errno == EINTR) return;
+        if (errno == EINTR)
+            return;
         throw std::runtime_error(strerror(errno));
     }
 
@@ -104,10 +111,10 @@ void EventPoll::wait(int timeout_ms) {
     m_pimpl->m_active_events.clear();
     for (int i = 0; i < n; i++) {
         socket_t  fd    = static_cast<socket_t>(m_pimpl->m_kernel_events[i].ident);
-        PollEvent event = PollEvent::None;
+        PollEvent event = PollEvent::NONE;
 
         if (m_pimpl->m_kernel_events[i].flags & EV_ERROR) {
-            event = PollEvent::Error;
+            event = PollEvent::ERR;
         } else {
             event = Impl::fromNative(m_pimpl->m_kernel_events[i].filter);
         }
@@ -116,4 +123,8 @@ void EventPoll::wait(int timeout_ms) {
     }
 }
 
-const std::vector<EventPoll::PollEventEntry>& EventPoll::events() const { return m_pimpl->m_active_events; }
+const std::vector<EventPoll::PollEventEntry>& EventPoll::events() const {
+    return m_pimpl->m_active_events;
+}
+
+#endif

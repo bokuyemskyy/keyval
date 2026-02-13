@@ -1,42 +1,51 @@
-#include <fcntl.h>
-#include <sys/epoll.h>
-#include <sys/eventfd.h>
-
-#include <cstring>
-#include <mutex>
-#include <stdexcept>
+#ifdef __linux__
 
 #include "event_poll.hpp"
 
+#include <cstring>
+#include <fcntl.h>
+#include <mutex>
+#include <stdexcept>
+#include <sys/epoll.h>
+#include <sys/eventfd.h>
+
 struct EventPoll::Impl {
     socket_t                        m_epoll_fd;
-    std::vector<struct epoll_event> m_kernel_events;
-    std::vector<PollEventEntry>     m_active_events;
-    std::mutex                      m_mutex;
+    std::vector<struct epoll_event> m_kernel_events{};
+    std::vector<PollEventEntry>     m_active_events{};
+    std::mutex                      m_mutex{};
 
     Impl(int max_events) : m_epoll_fd(epoll_create1(0)) {
-        if (m_epoll_fd == INVALID_SOCKET_FD) throw std::runtime_error(strerror(errno));
+        if (m_epoll_fd == INVALID_SOCKET_FD)
+            throw std::runtime_error(strerror(errno));
 
         m_kernel_events.resize(max_events);
     }
 
     ~Impl() {
-        if (m_epoll_fd != INVALID_SOCKET_FD) close(m_epoll_fd);
+        if (m_epoll_fd != INVALID_SOCKET_FD)
+            close(m_epoll_fd);
     }
 
     static uint32_t toNative(PollEvent event) {
         uint32_t native = 0;
-        if (event & PollEvent::Read) native |= EPOLLIN;
-        if (event & PollEvent::Write) native |= EPOLLOUT;
-        if (event & PollEvent::Error) native |= (EPOLLERR | EPOLLHUP);
+        if (event & PollEvent::Read)
+            native |= EPOLLIN;
+        if (event & PollEvent::Write)
+            native |= EPOLLOUT;
+        if (event & PollEvent::Error)
+            native |= (EPOLLERR | EPOLLHUP);
         return native;
     }
 
     static PollEvent fromNative(uint32_t native) {
         uint8_t res = PollEvent::None;
-        if (native & EPOLLIN) res |= PollEvent::Read;
-        if (native & EPOLLOUT) res |= PollEvent::Write;
-        if (native & (EPOLLERR | EPOLLHUP)) res |= PollEvent::Error;
+        if (native & EPOLLIN)
+            res |= PollEvent::Read;
+        if (native & EPOLLOUT)
+            res |= PollEvent::Write;
+        if (native & (EPOLLERR | EPOLLHUP))
+            res |= PollEvent::Error;
         return static_cast<PollEvent>(res);
     }
 };
@@ -52,7 +61,8 @@ void EventPoll::addFd(socket_t fd, PollEvent event) {
     ev.events  = Impl::toNative(event);
     ev.data.fd = fd;
 
-    if (epoll_ctl(m_pimpl->m_epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1) throw std::runtime_error(strerror(errno));
+    if (epoll_ctl(m_pimpl->m_epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1)
+        throw std::runtime_error(strerror(errno));
 }
 
 void EventPoll::modifyFd(socket_t fd, PollEvent event) {
@@ -63,7 +73,8 @@ void EventPoll::modifyFd(socket_t fd, PollEvent event) {
     ev.events  = Impl::toNative(event);
     ev.data.fd = fd;
 
-    if (epoll_ctl(m_pimpl->m_epoll_fd, EPOLL_CTL_MOD, fd, &ev) == -1) throw std::runtime_error(strerror(errno));
+    if (epoll_ctl(m_pimpl->m_epoll_fd, EPOLL_CTL_MOD, fd, &ev) == -1)
+        throw std::runtime_error(strerror(errno));
 }
 
 void EventPoll::removeFd(socket_t fd) {
@@ -75,7 +86,8 @@ void EventPoll::wait(int timeout_ms) {
     int n = epoll_wait(m_pimpl->m_epoll_fd, m_pimpl->m_kernel_events.data(), m_max_events, timeout_ms);
 
     if (n == -1) {
-        if (errno == EINTR) return;
+        if (errno == EINTR)
+            return;
         throw std::runtime_error(strerror(errno));
     }
 
@@ -88,4 +100,8 @@ void EventPoll::wait(int timeout_ms) {
     }
 }
 
-const std::vector<EventPoll::PollEventEntry>& EventPoll::events() const { return m_pimpl->m_active_events; }
+const std::vector<EventPoll::PollEventEntry>& EventPoll::events() const {
+    return m_pimpl->m_active_events;
+}
+
+#endif

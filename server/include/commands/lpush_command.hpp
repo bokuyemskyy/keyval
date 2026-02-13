@@ -2,20 +2,22 @@
 #include "icommand.hpp"
 
 class LPushCommand : public ICommand {
-   public:
-    Response execute(const Request& request, Session& session, Storage& storage) override final {
-        if (request.args.size() != 2) {
-            return Response{ResponseType::ERR, "ERR wrong number of arguments for 'lpush' command"};
+  public:
+    Response execute(const Request& request, Session& session, Storage& storage) final {
+        if (request.m_args.size() != 2) {
+            return Response{.m_type  = ResponseType::ERR,
+                            .m_value = "ERR wrong number of arguments for 'lpush' command"};
         }
 
-        const std::string& key   = request.args[0];
-        const std::string& value = request.args[1];
+        const std::string& key   = request.m_args[0];
+        const std::string& value = request.m_args[1];
 
         if (!storage.lpush(session.db(), key, value)) {
-            return Response{ResponseType::ERR, "ERR could not perform lpush operation"};
+            return Response{.m_type = ResponseType::ERR, .m_value = "ERR could not perform lpush operation"};
         }
 
         int length = storage.llen(session.db(), key);
-        return Response{ResponseType::INTEGER, length};
+
+        return Response{.m_type = ResponseType::INTEGER, .m_value = length};
     }
 };

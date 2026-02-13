@@ -1,26 +1,25 @@
 #pragma once
 
-#include <assert.h>
+#include "logger.hpp"
 
+#include <assert.h>
 #include <fstream>
 #include <unordered_map>
 
-#include "logger.hpp"
-
 class Config {
-   public:
+  public:
     Config(int argc, char** argv) { parseArgs(argc, argv); }
 
     std::string get(const std::string& key) const {
-        auto it = options.find(key);
-        assert(it != options.end());
+        auto it = m_options.find(key);
+        assert(it != m_options.end());
         return it->second;
     }
 
     int getInt(const std::string& key) const { return std::stoi(get(key)); }
 
-   private:
-    std::unordered_map<std::string, std::string> options{
+  private:
+    std::unordered_map<std::string, std::string> m_options{
         {"port", "6380"},
     };
     void parseArgs(int argc, char** argv) {
@@ -43,30 +42,31 @@ class Config {
                 // check if there any arg left AND current parameter isnt just a true/false
                 if (i + 1 < argc && argv[i + 1][0] != '-') {
                     value = argv[++i];
-                } else  // the current parameter is a true / false
+                } else // the current parameter is a true / false
                 {
                     value = "true";
                 }
-                options[key] = value;
+                m_options[key] = value;
             }
         }
     }
     void loadFile(const std::string& path) {
-        std::istream* in;    // generic pointer to the stream, in which the config will flow
-        std::ifstream file;  // out of "if" scope because will be accessed after
+        std::istream* in = nullptr; // generic pointer to the stream, in which the config will flow
+        std::ifstream file;         // out of "if" scope because will be accessed after
         if (path != "-") {
             file.open(path);
             if (!file) {
                 Logger::log(LogLevel::WARN, "Config file not found.");
                 return;
             }
-            in = &file;  // assign the file stream to the generic pointer
+            in = &file; // assign the file stream to the generic pointer
         } else {
-            in = &std::cin;  // assign the stdin
+            in = &std::cin; // assign the stdin
         }
-        std::string key, value;
+        std::string key;
+        std::string value;
         while (*in >> key >> value) {
-            options[key] = value;
+            m_options[key] = value;
         }
     }
 };

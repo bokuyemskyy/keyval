@@ -12,14 +12,14 @@ enum class LogLevel {
 };
 
 class Logger {
-   public:
+  public:
     static void log(LogLevel level, const std::string& message) {
-        std::time_t t          = std::time(nullptr);
-        std::string timeString = std::ctime(&t);
-        if (timeString.ends_with("\n")) {
-            timeString.pop_back();
+        std::time_t t           = std::time(nullptr);
+        std::string time_string = std::ctime(&t);
+        if (time_string.ends_with("\n")) {
+            time_string.pop_back();
         }
-        std::cout << "[" << timeString << "] ";
+        std::cout << "[" << time_string << "] ";
         switch (level) {
             case LogLevel::DEBUG:
                 std::cout << "[DEBUG] ";

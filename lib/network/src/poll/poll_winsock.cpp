@@ -1,18 +1,19 @@
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#ifdef _WIN32
+
+#include "event_poll.hpp"
 
 #include <cstring>
 #include <mutex>
 #include <stdexcept>
 #include <unordered_map>
-
-#include "event_poll.hpp"
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
 struct EventPoll::Impl {
-    std::vector<WSAPOLLFD>                  m_poll_fds;
-    std::unordered_map<socket_t, PollEvent> m_fd_map;
-    std::vector<PollEventEntry>             m_active_events;
-    std::mutex                              m_mutex;
+    std::vector<WSAPOLLFD>                  m_poll_fds{};
+    std::unordered_map<socket_t, PollEvent> m_fd_map{};
+    std::vector<PollEventEntry>             m_active_events{};
+    std::mutex                              m_mutex{};
 
     Impl(int max_events) : { m_poll_fds.reserve(max_events); }
 
@@ -20,17 +21,23 @@ struct EventPoll::Impl {
 
     static short toNative(PollEvent event) {
         short native = 0;
-        if (event & PollEvent::Read) native |= POLLRDNORM | POLLRDBAND;
-        if (event & PollEvent::Write) native |= POLLWRNORM;
-        if (event & PollEvent::Error) native |= POLLERR | POLLHUP;
+        if (event & PollEvent::Read)
+            native |= POLLRDNORM | POLLRDBAND;
+        if (event & PollEvent::Write)
+            native |= POLLWRNORM;
+        if (event & PollEvent::Error)
+            native |= POLLERR | POLLHUP;
         return native;
     }
 
     static PollEvent fromNative(short native) {
         uint8_t res = PollEvent::None;
-        if (native & (POLLRDNORM | POLLRDBAND)) res |= PollEvent::Read;
-        if (native & POLLWRNORM) res |= PollEvent::Write;
-        if (native & (POLLERR | POLLHUP | POLLNVAL)) res |= PollEvent::Error;
+        if (native & (POLLRDNORM | POLLRDBAND))
+            res |= PollEvent::Read;
+        if (native & POLLWRNORM)
+            res |= PollEvent::Write;
+        if (native & (POLLERR | POLLHUP | POLLNVAL))
+            res |= PollEvent::Error;
         return static_cast<PollEvent>(res);
     }
 
@@ -95,7 +102,8 @@ void EventPoll::wait(int timeout_ms) {
 
     if (n == SOCKET_ERROR) {
         int error = WSAGetLastError();
-        if (error == WSAEINTR) return;
+        if (error == WSAEINTR)
+            return;
         throw std::runtime_error("WSAPoll failed: " + std::to_string(error));
     }
 
@@ -109,4 +117,8 @@ void EventPoll::wait(int timeout_ms) {
     }
 }
 
-const std::vector<EventPoll::PollEventEntry>& EventPoll::events() const { return m_pimpl->m_active_events; }
+const std::vector<EventPoll::PollEventEntry>& EventPoll::events() const {
+    return m_pimpl->m_active_events;
+}
+
+#endif

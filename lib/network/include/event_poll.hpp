@@ -1,24 +1,23 @@
 #pragma once
 
-#include <cstdint>
-#include <memory>
-#include <mutex>
-#include <vector>
-
 #include "socket.hpp"
 
+#include <cstdint>
+#include <memory>
+#include <vector>
+
 enum PollEvent : uint8_t {
-    None  = 0,
-    Read  = 1 << 0,
-    Write = 1 << 1,
-    Error = 1 << 2
+    NONE  = 0,
+    READ  = 1 << 0,
+    WRITE = 1 << 1,
+    ERR   = 1 << 2
 };
 
 class EventPoll {
-   public:
+  public:
     struct PollEventEntry {
-        socket_t  fd;
-        PollEvent events;
+        socket_t  m_fd;
+        PollEvent m_events;
     };
 
     EventPoll(int max_events = 256);
@@ -27,14 +26,17 @@ class EventPoll {
     EventPoll(const EventPoll&)            = delete;
     EventPoll& operator=(const EventPoll&) = delete;
 
+    EventPoll(EventPoll&&)            = delete;
+    EventPoll& operator=(EventPoll&&) = delete;
+
     void addFd(socket_t fd, PollEvent event);
     void modifyFd(socket_t fd, PollEvent event);
     void removeFd(socket_t fd);
     void wait(int timeout_ms = -1);
 
-    const std::vector<PollEventEntry>& events() const;
+    [[nodiscard]] const std::vector<PollEventEntry>& events() const;
 
-   private:
+  private:
     int m_max_events;
 
     struct Impl;

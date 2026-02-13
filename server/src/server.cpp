@@ -19,12 +19,20 @@ void Server::removeConnection(int fd) {
     }
 }
 
-Connection& Server::getConnection(int fd) { return m_connections.at(fd); }
+Connection& Server::getConnection(int fd) {
+    return m_connections.at(fd);
+}
 
-bool Server::hasConnection(int fd) const { return m_connections.find(fd) != m_connections.end(); }
+bool Server::hasConnection(int fd) const {
+    return m_connections.find(fd) != m_connections.end();
+}
 
-Socket&  Server::getSocket(int fd) { return m_connections.at(fd).socket; }
-Session& Server::getSession(int fd) { return m_connections.at(fd).session; }
+Socket& Server::getSocket(int fd) {
+    return m_connections.at(fd).socket;
+}
+Session& Server::getSession(int fd) {
+    return m_connections.at(fd).session;
+}
 
 void Server::start() {
     Socket listen_socket;
@@ -36,7 +44,7 @@ void Server::start() {
     listen_socket.listen();
 
     EventPoll poll;
-    poll.addFd(listen_socket.fd(), PollEvent::Read);
+    poll.addFd(listen_socket.fd(), PollEvent::READ);
 
     Logger::log(LogLevel::INFO, "Ready to accept TCP connections.");
     m_running = true;
@@ -45,7 +53,7 @@ void Server::start() {
         poll.wait(500);
 
         for (const auto& ev : poll.events()) {
-            if (ev.fd == listen_socket.fd())  // new connection
+            if (ev.m_fd == listen_socket.fd()) // new connection
             {
                 try {
                     Socket client_socket = listen_socket.accept();
@@ -53,21 +61,21 @@ void Server::start() {
                     client_socket.setNonBlocking(true);
 
                     int client_fd = client_socket.fd();
-                    poll.addFd(client_fd, PollEvent::Read);
+                    poll.addFd(client_fd, PollEvent::READ);
 
-                    addConnection(std::move(client_socket));  // track connection
+                    addConnection(std::move(client_socket)); // track connection
 
                     Logger::log(LogLevel::INFO, "New client connected: fd=" + std::to_string(client_fd));
                 } catch (const std::exception& e) {
                     Logger::log(LogLevel::ERR, std::string("Accept failed: ") + e.what());
                 }
-            } else  // existing connection
+            } else // existing connection
             {
                 try {
-                    handleClient(ev.fd, poll);
+                    handleClient(ev.m_fd, poll);
                 } catch (const std::exception& e) {
                     Logger::log(LogLevel::ERR, std::string("Error handling client: ") + e.what());
-                    cleanupClient(ev.fd, poll);
+                    cleanupClient(ev.m_fd, poll);
                 }
             }
         }
@@ -86,13 +94,15 @@ void Server::start() {
     Logger::log(LogLevel::INFO, "Server stopped.");
 }
 
-void Server::stop() { m_running = false; }
+void Server::stop() {
+    m_running = false;
+}
 
 void Server::handleClient(int fd, EventPoll& poll) {
     Socket& sock = getSocket(fd);
 
-    std::string request_raw;
-    socket_size_t     bytes = sock.recv(request_raw);
+    std::string   request_raw;
+    socket_size_t bytes = sock.recv(request_raw);
 
     if (bytes <= 0) {
         if (bytes == 0) {
@@ -118,7 +128,7 @@ void Server::handleClient(int fd, EventPoll& poll) {
 
     Response response = m_handler.handle(request, getSession(fd));
 
-    if (response.type == ResponseType::SHUTDOWN) {
+    if (response.m_type == ResponseType::SHUTDOWN) {
         Logger::log(LogLevel::INFO, "Shutdown requested by client fd=" + std::to_string(fd));
         stop();
         return;
