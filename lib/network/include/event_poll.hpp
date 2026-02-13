@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+
 #include "socket.hpp"
 
 enum PollEvent : uint8_t {
@@ -16,7 +17,7 @@ enum PollEvent : uint8_t {
 class EventPoll {
    public:
     struct PollEventEntry {
-        socket_t       fd;
+        socket_t  fd;
         PollEvent events;
     };
 
@@ -36,6 +37,6 @@ class EventPoll {
    private:
     int m_max_events;
 
-    class Impl;
+    struct Impl;
     std::unique_ptr<Impl> m_pimpl;
 };

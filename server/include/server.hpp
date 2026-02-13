@@ -1,13 +1,13 @@
 #pragma once
 
-#include <algorithm>
-#include <unordered_map>
-
 #include "command_handler.hpp"
 #include "config.hpp"
 #include "event_poll.hpp"
 #include "session.hpp"
 #include "socket.hpp"
+
+#include <algorithm>
+#include <unordered_map>
 struct Connection {
     Socket  socket;
     Session session{};
@@ -22,7 +22,7 @@ struct Connection {
 };
 
 class Server {
-   public:
+  public:
     explicit Server(Config& config, CommandHandler& handler) : m_config(config), m_handler(handler) {
         Logger::log(LogLevel::INFO, "Server initialized.");
     };
@@ -30,7 +30,7 @@ class Server {
     void start();
     void stop();
 
-   private:
+  private:
     void        addConnection(Socket&& client_socket);
     void        removeConnection(int fd);
     Connection& getConnection(int fd);

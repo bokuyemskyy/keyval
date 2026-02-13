@@ -5,6 +5,7 @@
 #include <climits>
 #include <mutex>
 #include <regex>
+#include <shared_mutex>
 
 #include "regex.hpp"
 
@@ -27,13 +28,13 @@ size_t Storage::dbsize(size_t db) {
 
 bool Storage::flushdb(size_t db) {
     if (db >= m_databases.size()) return false;
-    std::unique_lock lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_databases[db].clear();
     return true;
 }
 
 bool Storage::flushall() {
-    std::unique_lock lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     for (auto& db : m_databases) db.clear();
     return true;
 }
@@ -41,8 +42,8 @@ bool Storage::flushall() {
 bool Storage::exists(size_t db) { return db < m_databases.size(); }
 
 bool Storage::exists(size_t db, const std::string& key) {
-    std::unique_lock lock(m_mutex);
-    auto             it = m_databases[db].find(key);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto                                it = m_databases[db].find(key);
     if (it == m_databases[db].end()) return false;
     if (isExpired(it->second)) {
         m_databases[db].erase(it);
@@ -52,7 +53,7 @@ bool Storage::exists(size_t db, const std::string& key) {
 }
 
 bool Storage::del(size_t db, const std::string& key) {
-    std::unique_lock lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     return m_databases[db].erase(key) > 0;
 }
 
@@ -84,8 +85,8 @@ std::vector<std::string> Storage::keys(size_t db, const std::string& pattern) {
 }
 
 bool Storage::expire(size_t db, const std::string& key, int seconds) {
-    std::unique_lock lock(m_mutex);
-    auto             it = m_databases[db].find(key);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto                                it = m_databases[db].find(key);
     if (it == m_databases[db].end()) return false;
     it->second.expire_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) + seconds;
     return true;
@@ -100,7 +101,7 @@ int Storage::ttl(size_t db, const std::string& key) {
 }
 
 bool Storage::set(size_t db, const std::string& key, const std::string& value) {
-    std::unique_lock lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_databases[db][key] = Value{ValueType::STRING, value};
     return true;
 }
@@ -114,8 +115,8 @@ std::optional<std::string> Storage::get(size_t db, const std::string& key) {
 }
 
 int Storage::incr(size_t db, const std::string& key) {
-    std::unique_lock lock(m_mutex);
-    auto&            store = m_databases[db];
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto&                               store = m_databases[db];
 
     if (!store.contains(key) || store[key].type != ValueType::STRING) store[key] = Value{ValueType::STRING, "0"};
 
@@ -134,8 +135,8 @@ int Storage::incr(size_t db, const std::string& key) {
 }
 
 int Storage::decr(size_t db, const std::string& key) {
-    std::unique_lock lock(m_mutex);
-    auto&            store = m_databases[db];
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto&                               store = m_databases[db];
 
     if (!store.contains(key) || store[key].type != ValueType::STRING) store[key] = Value{ValueType::STRING, "0"};
 
@@ -154,16 +155,16 @@ int Storage::decr(size_t db, const std::string& key) {
 }
 
 bool Storage::append(size_t db, const std::string& key, const std::string& value) {
-    std::unique_lock lock(m_mutex);
-    auto&            store = m_databases[db];
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto&                               store = m_databases[db];
     if (!store.contains(key) || store[key].type != ValueType::STRING) store[key] = Value{ValueType::STRING, ""};
     std::get<std::string>(store[key].data) += value;
     return true;
 }
 
 bool Storage::lpush(size_t db, const std::string& key, const std::string& value) {
-    std::unique_lock lock(m_mutex);
-    auto&            store = m_databases[db];
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto&                               store = m_databases[db];
     if (!store.contains(key)) {
         store[key] = Value{ValueType::LIST, std::list<std::string>{}};
     }
@@ -173,8 +174,8 @@ bool Storage::lpush(size_t db, const std::string& key, const std::string& value)
 }
 
 bool Storage::rpush(size_t db, const std::string& key, const std::string& value) {
-    std::unique_lock lock(m_mutex);
-    auto&            store = m_databases[db];
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto&                               store = m_databases[db];
     if (!store.contains(key)) {
         store[key] = Value{ValueType::LIST, std::list<std::string>{}};
     }
@@ -184,8 +185,8 @@ bool Storage::rpush(size_t db, const std::string& key, const std::string& value)
 }
 
 bool Storage::lpop(size_t db, const std::string& key, std::string& value) {
-    std::unique_lock lock(m_mutex);
-    auto             it = m_databases[db].find(key);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto                                it = m_databases[db].find(key);
     if (it == m_databases[db].end() || it->second.type != ValueType::LIST || isExpired(it->second)) return false;
     auto& lst = std::get<std::list<std::string>>(it->second.data);
     if (lst.empty()) return false;
@@ -195,8 +196,8 @@ bool Storage::lpop(size_t db, const std::string& key, std::string& value) {
 }
 
 bool Storage::rpop(size_t db, const std::string& key, std::string& value) {
-    std::unique_lock lock(m_mutex);
-    auto             it = m_databases[db].find(key);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto                                it = m_databases[db].find(key);
     if (it == m_databases[db].end() || it->second.type != ValueType::LIST || isExpired(it->second)) return false;
     auto& lst = std::get<std::list<std::string>>(it->second.data);
     if (lst.empty()) return false;
@@ -238,8 +239,8 @@ int Storage::llen(size_t db, const std::string& key) {
 }
 
 bool Storage::sadd(size_t db, const std::string& key, const std::string& member) {
-    std::unique_lock lock(m_mutex);
-    auto&            store = m_databases[db];
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto&                               store = m_databases[db];
     if (!store.contains(key)) {
         store[key] = Value{ValueType::SET, std::unordered_set<std::string>{}};
     }
@@ -248,8 +249,8 @@ bool Storage::sadd(size_t db, const std::string& key, const std::string& member)
 }
 
 bool Storage::srem(size_t db, const std::string& key, const std::string& member) {
-    std::unique_lock lock(m_mutex);
-    auto             it = m_databases[db].find(key);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto                                it = m_databases[db].find(key);
     if (it == m_databases[db].end() || it->second.type != ValueType::SET || isExpired(it->second)) return false;
     return std::get<std::unordered_set<std::string>>(it->second.data).erase(member) > 0;
 }
@@ -314,8 +315,8 @@ std::unordered_set<std::string> Storage::sinter(size_t db, const std::vector<std
 }
 
 bool Storage::rename(size_t db, const std::string& old_key, const std::string& new_key) {
-    std::unique_lock lock(m_mutex);
-    auto             it = m_databases[db].find(old_key);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    auto                                it = m_databases[db].find(old_key);
     if (it == m_databases[db].end()) return false;
     m_databases[db][new_key] = it->second;
     m_databases[db].erase(it);

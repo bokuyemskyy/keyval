@@ -11,6 +11,7 @@ else()
 
     set(SOCKET_SRC "src/socket/socket_posix.cpp")
 endif()
+
 add_library(network STATIC ${POLL_SRC} ${SOCKET_SRC})
 
 target_include_directories(network PUBLIC include)

@@ -5,7 +5,7 @@
 #include <string>
 
 class Session {
-   public:
+  public:
     Session() { m_connected_at = std::chrono::steady_clock::now(); }
 
     void   setDb(size_t db) noexcept { m_db = db; }
@@ -24,7 +24,7 @@ class Session {
 
     std::chrono::steady_clock::time_point connectedAt() const noexcept { return m_connected_at; }
 
-   private:
+  private:
     size_t                                m_db{};
     bool                                  m_authenticated{};
     std::string                           m_user;

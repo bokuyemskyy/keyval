@@ -8,9 +8,8 @@
 
 #include "event_poll.hpp"
 
-class EventPoll::Impl {
-   public:
-    socket_t                             m_epoll_fd;
+struct EventPoll::Impl {
+    socket_t                        m_epoll_fd;
     std::vector<struct epoll_event> m_kernel_events;
     std::vector<PollEventEntry>     m_active_events;
     std::mutex                      m_mutex;
@@ -45,9 +44,8 @@ class EventPoll::Impl {
 EventPoll::EventPoll(int max_events) : m_pimpl(std::make_unique<Impl>(max_events)), m_max_events(max_events) {}
 EventPoll::~EventPoll() = default;
 
-
 void EventPoll::addFd(socket_t fd, PollEvent event) {
-    std::lock_guard lock(m_pimpl->m_mutex);
+    std::unique_lock<std::mutex> lock(m_pimpl->m_mutex);
 
     struct epoll_event ev{};
 
@@ -58,7 +56,7 @@ void EventPoll::addFd(socket_t fd, PollEvent event) {
 }
 
 void EventPoll::modifyFd(socket_t fd, PollEvent event) {
-    std::lock_guard lock(m_pimpl->m_mutex);
+    std::unique_lock<std::mutex> lock(m_pimpl->m_mutex);
 
     struct epoll_event ev{};
 
@@ -69,7 +67,7 @@ void EventPoll::modifyFd(socket_t fd, PollEvent event) {
 }
 
 void EventPoll::removeFd(socket_t fd) {
-    std::lock_guard lock(m_pimpl->m_mutex);
+    std::unique_lock<std::mutex> lock(m_pimpl->m_mutex);
     epoll_ctl(m_pimpl->m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
 }
 
@@ -81,7 +79,8 @@ void EventPoll::wait(int timeout_ms) {
         throw std::runtime_error(strerror(errno));
     }
 
-    std::lock_guard lock(m_pimpl->m_mutex);
+    std::unique_lock<std::mutex> lock(m_pimpl->m_mutex);
+
     m_pimpl->m_active_events.clear();
     for (int i = 0; i < n; i++) {
         m_pimpl->m_active_events.push_back(

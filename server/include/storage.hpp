@@ -10,15 +10,15 @@
 #include <vector>
 
 class Storage {
-   public:
+  public:
     Storage(size_t db_count = 16);
 
     size_t dbsize(size_t db);
     bool   flushdb(size_t db);
     bool   flushall();
 
-    bool                     exists(size_t db);                          // to check if db index is valid
-    bool                     exists(size_t db, const std::string& key);  // to check if key exists in db
+    bool                     exists(size_t db);                         // to check if db index is valid
+    bool                     exists(size_t db, const std::string& key); // to check if key exists in db
     bool                     del(size_t db, const std::string& key);
     std::string              type(size_t db, const std::string& key);
     std::vector<std::string> keys(size_t db, const std::string& pattern);
@@ -49,7 +49,7 @@ class Storage {
 
     bool rename(size_t db, const std::string& old_key, const std::string& new_key);
 
-   private:
+  private:
     enum class ValueType : std::uint8_t {
         STRING,
         LIST,

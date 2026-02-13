@@ -44,9 +44,9 @@ void Socket::close() {
 
 bool Socket::valid() const { return m_fd != INVALID_SOCKET_FD; }
 
-int Socket::fd() const { return m_fd; }
+socket_t Socket::fd() const { return m_fd; }
 
-int Socket::release() {
+socket_t Socket::release() {
     int fd = m_fd;
     m_fd   = INVALID_SOCKET_FD;
     return fd;
@@ -75,16 +75,16 @@ void Socket::bind(uint16_t port) {
     addr.sin_port        = htons(port);
 
     if (::bind(m_fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0)
-        throw std::runtime_error(std::string("bind failed: ") + strerror(errno));
+        throw std::runtime_error("bind failed: " + std::string(strerror(errno)));
 }
 
 void Socket::listen(int backlog) {
-    if (::listen(m_fd, backlog) < 0) throw std::runtime_error(std::string("listen failed: ") + strerror(errno));
+    if (::listen(m_fd, backlog) < 0) throw std::runtime_error("listen failed: " + std::string(strerror(errno)));
 }
 
 Socket Socket::accept() {
     int client_fd = ::accept(m_fd, nullptr, nullptr);
-    if (client_fd < 0) throw std::runtime_error(std::string("accept failed: ") + strerror(errno));
+    if (client_fd < 0) throw std::runtime_error("accept failed: " + std::string(strerror(errno)));
     return Socket(client_fd);
 }
 
@@ -94,7 +94,7 @@ void Socket::connect(const std::string& host, uint16_t port) {
     addr.sin_port   = htons(port);
     if (::inet_pton(AF_INET, host.c_str(), &addr.sin_addr) <= 0) throw std::runtime_error("invalid address");
     if (::connect(m_fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0)
-        throw std::runtime_error(std::string("connect failed: ") + strerror(errno));
+        throw std::runtime_error("connect failed: " + std::string(strerror(errno)));
 }
 
 socket_size_t Socket::recv(void* buffer, size_t size) {
@@ -103,7 +103,7 @@ socket_size_t Socket::recv(void* buffer, size_t size) {
     ssize_t bytes = ::recv(m_fd, buffer, size, 0);
     if (bytes < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) return 0;  // not an error, just no data
-        throw std::runtime_error(std::string("recv failed: ") + strerror(errno));
+        throw std::runtime_error("recv failed: " + std::string(strerror(errno)));
     }
     return bytes;
 }
@@ -124,7 +124,7 @@ socket_size_t Socket::send(const void* data, size_t size) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             return 0;
         }
-        throw std::runtime_error(std::string("send failed: ") + strerror(errno));
+        throw std::runtime_error("send failed: " + std::string(strerror(errno)));
     }
     return sent;
 }

@@ -8,23 +8,15 @@
 
 #include "event_poll.hpp"
 
+struct EventPoll::Impl {
+    std::vector<WSAPOLLFD>                  m_poll_fds;
+    std::unordered_map<socket_t, PollEvent> m_fd_map;
+    std::vector<PollEventEntry>             m_active_events;
+    std::mutex                              m_mutex;
 
-class EventPoll::Impl {
-   public:
-    std::vector<WSAPOLLFD>                      m_poll_fds;
-    std::unordered_map<socket_t, PollEvent>     m_fd_map;
-    std::vector<PollEventEntry>     m_active_events;
-    std::mutex                      m_mutex;
-    int                                         m_max_events;
+    Impl(int max_events) : { m_poll_fds.reserve(max_events); }
 
-    Impl(int max_events) : m_max_events(max_events) {
-        m_poll_fds.reserve(max_events);
-    }
-
-
-    ~Impl() {
-        WSACleanup();
-    }
+    ~Impl() { WSACleanup(); }
 
     static short toNative(PollEvent event) {
         short native = 0;
@@ -41,13 +33,13 @@ class EventPoll::Impl {
         if (native & (POLLERR | POLLHUP | POLLNVAL)) res |= PollEvent::Error;
         return static_cast<PollEvent>(res);
     }
-    
+
     void rebuildPollArray() {
         m_poll_fds.clear();
         for (const auto& entry : m_fd_map) {
             WSAPOLLFD pfd{};
-            pfd.fd = entry.first;
-            pfd.events = toNative(entry.second);
+            pfd.fd      = entry.first;
+            pfd.events  = toNative(entry.second);
             pfd.revents = 0;
             m_poll_fds.push_back(pfd);
         }
@@ -57,9 +49,8 @@ class EventPoll::Impl {
 EventPoll::EventPoll(int max_events) : m_pimpl(std::make_unique<Impl>(max_events)), m_max_events(max_events) {}
 EventPoll::~EventPoll() = default;
 
-
 void EventPoll::addFd(socket_t fd, PollEvent event) {
-    std::lock_guard lock(m_pimpl->m_mutex);
+    std::unique_lock<std::mutex> lock(m_pimpl->m_mutex);
 
     if (m_pimpl->m_fd_map.find(fd) != m_pimpl->m_fd_map.end()) {
         throw std::runtime_error("File descriptor already exists");
@@ -70,10 +61,10 @@ void EventPoll::addFd(socket_t fd, PollEvent event) {
 }
 
 void EventPoll::modifyFd(socket_t fd, PollEvent event) {
-    std::lock_guard lock(m_pimpl->m_mutex);
+    std::unique_lock<std::mutex> lock(m_pimpl->m_mutex);
 
     auto it = m_pimpl->m_fd_map.find(fd);
-    if (it == m_pimpl->m_fd_map.end()){
+    if (it == m_pimpl->m_fd_map.end()) {
         throw std::runtime_error("File descriptor not found");
     }
 
@@ -82,7 +73,7 @@ void EventPoll::modifyFd(socket_t fd, PollEvent event) {
 }
 
 void EventPoll::removeFd(socket_t fd) {
-    std::lock_guard lock(m_pimpl->m_mutex);
+    std::unique_lock<std::mutex> lock(m_pimpl->m_mutex);
 
     m_pimpl->m_fd_map.erase(fd);
     m_pimpl->rebuildPollArray();
@@ -90,9 +81,9 @@ void EventPoll::removeFd(socket_t fd) {
 
 void EventPoll::wait(int timeout_ms) {
     std::vector<WSAPOLLFD> poll_fds_copy;
-    
+
     {
-        std::lock_guard lock(m_pimpl->m_mutex);
+        std::unique_lock<std::mutex> lock(m_pimpl->m_mutex);
         if (m_pimpl->m_poll_fds.empty()) {
             m_pimpl->m_active_events.clear();
             return;
@@ -100,9 +91,7 @@ void EventPoll::wait(int timeout_ms) {
         poll_fds_copy = m_pimpl->m_poll_fds;
     }
 
-    int n = WSAPoll(poll_fds_copy.data(), 
-                    static_cast<ULONG>(poll_fds_copy.size()), 
-                    timeout_ms);
+    int n = WSAPoll(poll_fds_copy.data(), static_cast<ULONG>(poll_fds_copy.size()), timeout_ms);
 
     if (n == SOCKET_ERROR) {
         int error = WSAGetLastError();
@@ -110,19 +99,14 @@ void EventPoll::wait(int timeout_ms) {
         throw std::runtime_error("WSAPoll failed: " + std::to_string(error));
     }
 
-    std::lock_guard lock(m_pimpl->m_mutex);
+    std::unique_lock<std::mutex> lock(m_pimpl->m_mutex);
     m_pimpl->m_active_events.clear();
-    
+
     for (const auto& pfd : poll_fds_copy) {
         if (pfd.revents != 0) {
-            m_pimpl->m_active_events.push_back({
-                pfd.fd, 
-                Impl::fromNative(pfd.revents)
-            });
+            m_pimpl->m_active_events.push_back({pfd.fd, Impl::fromNative(pfd.revents)});
         }
     }
 }
 
-const std::vector<EventPoll::PollEventEntry>& EventPoll::events() const { 
-    return m_pimpl->m_active_events; 
-}
+const std::vector<EventPoll::PollEventEntry>& EventPoll::events() const { return m_pimpl->m_active_events; }
