@@ -21,7 +21,7 @@ using ResponseValue = std::variant<
 enum class ResponseType
 {
     SIMPLE_STRING,
-    ERROR,
+    ERR,
     INTEGER,
     BULK_STRING,
     ARRAY,

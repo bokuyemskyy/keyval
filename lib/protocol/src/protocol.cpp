@@ -66,7 +66,7 @@ std::string Protocol::serializeResponse(const Response& response) {
             if (auto str = std::get_if<std::string>(&response.value)) return "+" + *str + "\r\n";
             break;
 
-        case ResponseType::ERROR:
+        case ResponseType::ERR:
             if (auto str = std::get_if<std::string>(&response.value)) return "-" + *str + "\r\n";
             break;
 

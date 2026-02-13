@@ -10,19 +10,19 @@
 
 class EventPoll::Impl {
    public:
-    int                             m_epoll_fd;
+    socket_t                             m_epoll_fd;
     std::vector<struct epoll_event> m_kernel_events;
     std::vector<PollEventEntry>     m_active_events;
     std::mutex                      m_mutex;
 
     Impl(int max_events) : m_epoll_fd(epoll_create1(0)) {
-        if (m_epoll_fd == -1) throw std::runtime_error(strerror(errno));
+        if (m_epoll_fd == INVALID_SOCKET_FD) throw std::runtime_error(strerror(errno));
 
         m_kernel_events.resize(max_events);
     }
 
     ~Impl() {
-        if (m_epoll_fd != -1) close(m_epoll_fd);
+        if (m_epoll_fd != INVALID_SOCKET_FD) close(m_epoll_fd);
     }
 
     static uint32_t toNative(PollEvent event) {
@@ -45,15 +45,9 @@ class EventPoll::Impl {
 EventPoll::EventPoll(int max_events) : m_pimpl(std::make_unique<Impl>(max_events)), m_max_events(max_events) {}
 EventPoll::~EventPoll() = default;
 
-void EventPoll::setNonblocking(int fd) {
-    int flags = fcntl(fd, F_GETFL, 0);
-    if (flags == -1 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) throw std::runtime_error(strerror(errno));
-}
 
-void EventPoll::addFd(int fd, PollEvent event) {
+void EventPoll::addFd(socket_t fd, PollEvent event) {
     std::lock_guard lock(m_pimpl->m_mutex);
-
-    setNonblocking(fd);
 
     struct epoll_event ev{};
 
@@ -63,7 +57,7 @@ void EventPoll::addFd(int fd, PollEvent event) {
     if (epoll_ctl(m_pimpl->m_epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1) throw std::runtime_error(strerror(errno));
 }
 
-void EventPoll::modifyFd(int fd, PollEvent event) {
+void EventPoll::modifyFd(socket_t fd, PollEvent event) {
     std::lock_guard lock(m_pimpl->m_mutex);
 
     struct epoll_event ev{};
@@ -74,7 +68,7 @@ void EventPoll::modifyFd(int fd, PollEvent event) {
     if (epoll_ctl(m_pimpl->m_epoll_fd, EPOLL_CTL_MOD, fd, &ev) == -1) throw std::runtime_error(strerror(errno));
 }
 
-void EventPoll::removeFd(int fd) {
+void EventPoll::removeFd(socket_t fd) {
     std::lock_guard lock(m_pimpl->m_mutex);
     epoll_ctl(m_pimpl->m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
 }

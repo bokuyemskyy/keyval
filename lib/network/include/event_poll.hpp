@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include "socket.hpp"
 
 enum PollEvent : uint8_t {
     None  = 0,
@@ -15,7 +16,7 @@ enum PollEvent : uint8_t {
 class EventPoll {
    public:
     struct PollEventEntry {
-        int       fd;
+        socket_t       fd;
         PollEvent events;
     };
 
@@ -25,9 +26,9 @@ class EventPoll {
     EventPoll(const EventPoll&)            = delete;
     EventPoll& operator=(const EventPoll&) = delete;
 
-    void addFd(int fd, PollEvent event);
-    void modifyFd(int fd, PollEvent event);
-    void removeFd(int fd);
+    void addFd(socket_t fd, PollEvent event);
+    void modifyFd(socket_t fd, PollEvent event);
+    void removeFd(socket_t fd);
     void wait(int timeout_ms = -1);
 
     const std::vector<PollEventEntry>& events() const;
@@ -37,6 +38,4 @@ class EventPoll {
 
     class Impl;
     std::unique_ptr<Impl> m_pimpl;
-
-    void setNonblocking(int fd);
 };
