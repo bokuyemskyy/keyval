@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 
         server.start();
     } catch (const std::exception& e) {
-        Logger::log(LogLevel::ERROR, std::string("Fatal error: ") + e.what());
+        Logger::log(LogLevel::ERR, std::string("Fatal error: ") + e.what());
         return 1;
     }
     return 0;

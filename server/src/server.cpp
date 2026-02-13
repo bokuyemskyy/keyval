@@ -1,10 +1,5 @@
 #include "server.hpp"
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
 #include "event_poll.hpp"
 #include "protocol.hpp"
 #include "socket.hpp"
@@ -47,7 +42,7 @@ void Server::start() {
     m_running = true;
 
     while (m_running) {
-        poll.wait(-1);
+        poll.wait(500);
 
         for (const auto& ev : poll.events()) {
             if (ev.fd == listen_socket.fd())  // new connection
@@ -64,14 +59,14 @@ void Server::start() {
 
                     Logger::log(LogLevel::INFO, "New client connected: fd=" + std::to_string(client_fd));
                 } catch (const std::exception& e) {
-                    Logger::log(LogLevel::ERROR, std::string("Accept failed: ") + e.what());
+                    Logger::log(LogLevel::ERR, std::string("Accept failed: ") + e.what());
                 }
             } else  // existing connection
             {
                 try {
                     handleClient(ev.fd, poll);
                 } catch (const std::exception& e) {
-                    Logger::log(LogLevel::ERROR, std::string("Error handling client: ") + e.what());
+                    Logger::log(LogLevel::ERR, std::string("Error handling client: ") + e.what());
                     cleanupClient(ev.fd, poll);
                 }
             }
@@ -97,7 +92,7 @@ void Server::handleClient(int fd, EventPoll& poll) {
     Socket& sock = getSocket(fd);
 
     std::string request_raw;
-    ssize_t     bytes = sock.recv(request_raw);
+    socket_size_t     bytes = sock.recv(request_raw);
 
     if (bytes <= 0) {
         if (bytes == 0) {
@@ -114,7 +109,7 @@ void Server::handleClient(int fd, EventPoll& poll) {
         Logger::log(LogLevel::WARN, "Protocol error from fd=" + std::to_string(fd) + ": " + e.what());
 
         std::string error_response =
-            Protocol::serializeResponse(Response{ResponseType::ERROR, std::string("ERR ") + e.what()});
+            Protocol::serializeResponse(Response{ResponseType::ERR, std::string("ERR ") + e.what()});
         sock.send(error_response);
 
         cleanupClient(fd, poll);

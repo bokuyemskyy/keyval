@@ -1,5 +1,3 @@
-#include "socket.hpp"
-
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -15,18 +13,18 @@
 #include <string>
 #include <vector>
 
+#include "socket.hpp"
+
 Socket::Socket() : m_fd(INVALID_SOCKET_FD) {}
 Socket::Socket(socket_t fd) : m_fd(fd) {}
 Socket::~Socket() { close(); }
 
-Socket::Socket(Socket&& other) noexcept : m_fd(other.m_fd) {
-    other.m_fd = INVALID_SOCKET_FD;
-}
+Socket::Socket(Socket&& other) noexcept : m_fd(other.m_fd) { other.m_fd = INVALID_SOCKET_FD; }
 
 Socket& Socket::operator=(Socket&& other) noexcept {
     if (this != &other) {
         close();
-        m_fd = other.m_fd;
+        m_fd       = other.m_fd;
         other.m_fd = INVALID_SOCKET_FD;
     }
     return *this;
@@ -34,8 +32,7 @@ Socket& Socket::operator=(Socket&& other) noexcept {
 
 void Socket::create() {
     m_fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    if (m_fd < 0)
-        throw std::runtime_error("socket creation failed");
+    if (m_fd < 0) throw std::runtime_error("socket creation failed");
 }
 
 void Socket::close() {
@@ -45,13 +42,9 @@ void Socket::close() {
     }
 }
 
-bool Socket::valid() const {
-    return m_fd != INVALID_SOCKET_FD;
-}
+bool Socket::valid() const { return m_fd != INVALID_SOCKET_FD; }
 
-int Socket::fd() const {
-    return m_fd;
-}
+int Socket::fd() const { return m_fd; }
 
 int Socket::release() {
     int fd = m_fd;
@@ -59,13 +52,13 @@ int Socket::release() {
     return fd;
 }
 
-void Socket::setReuseAddr(bool enable)  {
+void Socket::setReuseAddr(bool enable) {
     int opt = enable ? 1 : 0;
     if (::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
         throw std::runtime_error("setsockopt(SO_REUSEADDR) failed");
 }
 
-void Socket::setNonBlocking(bool enable)  {
+void Socket::setNonBlocking(bool enable) {
     int flags = fcntl(m_fd, F_GETFL, 0);
     if (flags == -1) throw std::runtime_error("fcntl(F_GETFL) failed");
     if (enable)
@@ -75,7 +68,7 @@ void Socket::setNonBlocking(bool enable)  {
     if (fcntl(m_fd, F_SETFL, flags) == -1) throw std::runtime_error("fcntl(F_SETFL) failed");
 }
 
-void Socket::bind(uint16_t port)  {
+void Socket::bind(uint16_t port) {
     sockaddr_in addr{};
     addr.sin_family      = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
@@ -85,17 +78,17 @@ void Socket::bind(uint16_t port)  {
         throw std::runtime_error(std::string("bind failed: ") + strerror(errno));
 }
 
-void Socket::listen(int backlog)  {
+void Socket::listen(int backlog) {
     if (::listen(m_fd, backlog) < 0) throw std::runtime_error(std::string("listen failed: ") + strerror(errno));
 }
 
-Socket Socket::accept()  {
+Socket Socket::accept() {
     int client_fd = ::accept(m_fd, nullptr, nullptr);
     if (client_fd < 0) throw std::runtime_error(std::string("accept failed: ") + strerror(errno));
     return Socket(client_fd);
 }
 
-void Socket::connect( std::string& host, uint16_t port)  {
+void Socket::connect(const std::string& host, uint16_t port) {
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_port   = htons(port);
@@ -104,7 +97,7 @@ void Socket::connect( std::string& host, uint16_t port)  {
         throw std::runtime_error(std::string("connect failed: ") + strerror(errno));
 }
 
-socket_size_t Socket::recv(void* buffer, size_t size)  {
+socket_size_t Socket::recv(void* buffer, size_t size) {
     if (m_fd == INVALID_SOCKET_FD) throw std::runtime_error("recv on invalid socket");
 
     ssize_t bytes = ::recv(m_fd, buffer, size, 0);
@@ -115,7 +108,7 @@ socket_size_t Socket::recv(void* buffer, size_t size)  {
     return bytes;
 }
 
-socket_size_t Socket::recv(std::string& out, size_t max_size)  {
+socket_size_t Socket::recv(std::string& out, size_t max_size) {
     std::vector<char> buffer(max_size);
     ssize_t           bytes = recv(buffer.data(), buffer.size());
     if (bytes > 0) {
@@ -123,7 +116,7 @@ socket_size_t Socket::recv(std::string& out, size_t max_size)  {
     }
     return bytes;
 }
-socket_size_t Socket::send(const void* data, size_t size)  {
+socket_size_t Socket::send(const void* data, size_t size) {
     if (m_fd == INVALID_SOCKET_FD) throw std::runtime_error("send on invalid socket");
 
     ssize_t sent = ::send(m_fd, data, size, 0);
@@ -135,9 +128,4 @@ socket_size_t Socket::send(const void* data, size_t size)  {
     }
     return sent;
 }
-socket_size_t Socket::send(const std::string& data)  { return send(data.data(), data.size()); }
-
-
-
-
-
+socket_size_t Socket::send(const std::string& data) { return send(data.data(), data.size()); }
