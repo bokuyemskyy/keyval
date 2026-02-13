@@ -5,7 +5,7 @@ class LRangeCommand : public ICommand {
    public:
     Response execute(const Request& request, Session& session, Storage& storage) override final {
         if (request.args.size() != 3) {
-            return Response{ResponseType::ERROR, "ERR wrong number of arguments for 'lrange' command"};
+            return Response{ResponseType::ERR, "ERR wrong number of arguments for 'lrange' command"};
         }
 
         const std::string& key   = request.args[0];
@@ -14,7 +14,7 @@ class LRangeCommand : public ICommand {
 
         std::vector<std::string> elements = storage.lrange(session.db(), key, start, stop);
         if (elements.empty()) {
-            return Response{ResponseType::ERROR, "ERR could not perform lrange operation"};
+            return Response{ResponseType::ERR, "ERR could not perform lrange operation"};
         }
 
         auto responses = std::vector<std::shared_ptr<Response>>{};

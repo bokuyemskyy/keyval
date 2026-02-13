@@ -1,6 +1,11 @@
 #pragma once
 
+#ifdef _WIN32
+#include <process.h>
+#define getpid() _getpid()
+#else
 #include <unistd.h>
+#endif
 
 #include <array>
 #include <format>
@@ -10,20 +15,20 @@
 #include "config.hpp"
 
 namespace AppInfo {
-inline constexpr auto Name    = "Keyval";
-inline constexpr auto Version = "0.1.1";
-inline constexpr auto Website = "https://github.com/bokuyemskyy/keyval";
+const std::string Name    = "Keyval";
+const std::string Version = "0.1.1";
+const std::string Website = "https://github.com/bokuyemskyy/keyval";
 
 #if defined(__x86_64__) || defined(_M_X64)
-inline constexpr auto Arch = "x86_64";
+const std::string Arch = "x86_64";
 #elif defined(__i386__) || defined(_M_IX86)
-inline constexpr auto Arch = "i686";
+const std::string Arch = "i686";
 #elif defined(__aarch64__)
-inline constexpr auto Arch = "arm64";
+const std::string Arch = "arm64";
 #elif defined(__arm__) || defined(_M_ARM)
-inline constexpr auto Arch = "arm";
+const std::string Arch = "arm";
 #else
-inline constexpr auto Arch = "unknown";
+const std::string Arch = "unknown";
 #endif
 
 }  // namespace AppInfo
@@ -38,9 +43,12 @@ void printBanner(const Config& config) {
         "            '--'                   ", 
         "                                   "};
     // clang-format on
-    std::vector<std::string> info = {std::format("{} {} {}", AppInfo::Name, AppInfo::Version, AppInfo::Arch),
-                                     std::format("Port: {}", config.get("port")), std::format("PID: {}", getpid()),
-                                     std::format("{}", AppInfo::Website)};
+    std::vector<std::string> info = {
+        AppInfo::Name + " " + AppInfo::Version + " " + AppInfo::Arch,
+        "Port: " + config.get("port"),
+        "PID: " + std::to_string(getpid()),
+        AppInfo::Website
+    };
 
     for (size_t i = 0; i < logo.size(); i++) {
         std::cout << logo[i];

@@ -5,7 +5,7 @@ class SAddCommand : public ICommand {
    public:
     Response execute(const Request& request, Session& session, Storage& storage) override final {
         if (request.args.size() < 2) {
-            return Response{ResponseType::ERROR, "ERR wrong number of arguments for 'sadd' command"};
+            return Response{ResponseType::ERR, "ERR wrong number of arguments for 'sadd' command"};
         }
 
         const std::string&       key = request.args[0];
@@ -13,7 +13,7 @@ class SAddCommand : public ICommand {
 
         for (const auto& member : members) {
             if (!storage.sadd(session.db(), key, member)) {
-                return Response{ResponseType::ERROR, "ERR could not perform sadd operation"};
+                return Response{ResponseType::ERR, "ERR could not perform sadd operation"};
             }
         }
 

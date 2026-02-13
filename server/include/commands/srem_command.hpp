@@ -5,7 +5,7 @@ class SRemCommand : public ICommand {
    public:
     Response execute(const Request& request, Session& session, Storage& storage) override final {
         if (request.args.size() < 2) {
-            return Response{ResponseType::ERROR, "ERR wrong number of arguments for 'srem' command"};
+            return Response{ResponseType::ERR, "ERR wrong number of arguments for 'srem' command"};
         }
 
         const std::string&       key = request.args[0];
@@ -13,7 +13,7 @@ class SRemCommand : public ICommand {
 
         for (const auto& member : members) {
             if (!storage.srem(session.db(), key, member)) {
-                return Response{ResponseType::ERROR, "ERR could not perform srem operation"};
+                return Response{ResponseType::ERR, "ERR could not perform srem operation"};
             }
         }
 

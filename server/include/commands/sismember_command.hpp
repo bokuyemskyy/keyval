@@ -5,7 +5,7 @@ class SIsMemberCommand : public ICommand {
    public:
     Response execute(const Request& request, Session& session, Storage& storage) override final {
         if (request.args.size() != 2) {
-            return Response{ResponseType::ERROR, "ERR wrong number of arguments for 'sismember' command"};
+            return Response{ResponseType::ERR, "ERR wrong number of arguments for 'sismember' command"};
         }
 
         const std::string& key    = request.args[0];

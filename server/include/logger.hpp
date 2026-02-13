@@ -8,7 +8,7 @@ enum class LogLevel {
     DEBUG,
     INFO,
     WARN,
-    ERROR
+    ERR
 };
 
 class Logger {
@@ -30,7 +30,7 @@ class Logger {
             case LogLevel::WARN:
                 std::cerr << "[WARN] ";
                 break;
-            case LogLevel::ERROR:
+            case LogLevel::ERR:
                 std::cerr << "[ERROR] ";
                 break;
         }
