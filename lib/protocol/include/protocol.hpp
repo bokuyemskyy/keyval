@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+#include <memory> // NOLINT
 #include <sstream>
 #include <string>
 #include <variant>
