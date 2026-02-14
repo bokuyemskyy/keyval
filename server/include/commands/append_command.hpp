@@ -10,8 +10,8 @@ class AppendCommand : public ICommand {
         const std::string& key   = request.m_args[0];
         const std::string& value = request.m_args[1];
 
-        storage.append(session.db(), key, value);
+        int result = storage.append(session.db(), key, value);
 
-        return Response{.m_type = ResponseType::SIMPLE_STRING, .m_value = "OK"};
+        return Response{.m_type = ResponseType::INTEGER, .m_value = result};
     }
 };

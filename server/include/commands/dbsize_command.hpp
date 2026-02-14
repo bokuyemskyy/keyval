@@ -7,6 +7,6 @@ class DbSizeCommand : public ICommand {
         if (!request.m_args.empty())
             return Response{.m_type = ResponseType::ERR, .m_value = "ERR wrong number of arguments for 'DBSIZE'"};
 
-        return Response{.m_type = ResponseType::INTEGER, .m_value = std::to_string(storage.dbsize(session.db()))};
+        return Response{.m_type = ResponseType::INTEGER, .m_value = static_cast<int>(storage.dbsize(session.db()))};
     }
 };

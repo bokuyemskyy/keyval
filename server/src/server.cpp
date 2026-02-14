@@ -40,7 +40,7 @@ void Server::start() {
     listen_socket.create();
     listen_socket.setReuseAddr(true);
     listen_socket.setNonBlocking(true);
-    listen_socket.bind(m_config.getInt("port"));
+    listen_socket.bind("0.0.0.0", m_config.getInt("port"));
     listen_socket.listen();
 
     EventPoll poll;

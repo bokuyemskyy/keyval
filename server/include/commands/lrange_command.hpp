@@ -14,9 +14,6 @@ class LRangeCommand : public ICommand {
         int                stop  = std::stoi(request.m_args[2]);
 
         std::vector<std::string> elements = storage.lrange(session.db(), key, start, stop);
-        if (elements.empty()) {
-            return Response{.m_type = ResponseType::ERR, .m_value = "ERR could not perform lrange operation"};
-        }
 
         auto responses = std::vector<std::shared_ptr<Response>>{};
         responses.reserve(elements.size());

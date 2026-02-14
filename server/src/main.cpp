@@ -17,7 +17,7 @@ void handleSignal(int) {
 
 int main(int argc, char** argv) {
     try {
-        Logger::log(LogLevel::INFO, std::format("{} is starting", AppInfo::NAME));
+        Logger::log(LogLevel::INFO, std::format("{} is starting", app_info::NAME));
 
         Config  config(argc, argv);
         Storage storage;

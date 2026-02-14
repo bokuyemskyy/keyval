@@ -4,7 +4,9 @@
 #include <process.h>
 #define getpid() _getpid()
 #else
+// NOLINTBEGIN
 #include <unistd.h>
+// NOLINTEND
 #endif
 
 #include "config.hpp"
@@ -13,7 +15,7 @@
 #include <iostream>
 #include <vector>
 
-namespace AppInfo {
+namespace app_info {
 const std::string NAME    = "Keyval";
 const std::string VERSION = "0.1.1";
 const std::string WEBSITE = "https://github.com/bokuyemskyy/keyval";
@@ -30,7 +32,7 @@ const std::string ARCH = "arm";
 const std::string ARCH = "unknown";
 #endif
 
-} // namespace AppInfo
+} // namespace app_info
 
 void printBanner(const Config& config) {
     // clang-format off
@@ -42,9 +44,9 @@ void printBanner(const Config& config) {
         "            '--'                   ", 
         "                                   "};
     // clang-format on
-    std::vector<std::string> info = {AppInfo::NAME + " " + AppInfo::VERSION + " " + AppInfo::ARCH,
+    std::vector<std::string> info = {app_info::NAME + " " + app_info::VERSION + " " + app_info::ARCH,
                                      "Port: " + config.get("port"), "PID: " + std::to_string(getpid()),
-                                     AppInfo::WEBSITE};
+                                     app_info::WEBSITE};
 
     for (size_t i = 0; i < logo.size(); i++) {
         std::cout << logo[i];

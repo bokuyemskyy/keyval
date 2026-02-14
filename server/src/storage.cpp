@@ -169,13 +169,13 @@ int Storage::decr(size_t db, const std::string& key) {
     return num;
 }
 
-bool Storage::append(size_t db, const std::string& key, const std::string& value) {
+int Storage::append(size_t db, const std::string& key, const std::string& value) {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     auto&                               store = m_databases[db];
     if (!store.contains(key) || store[key].m_type != ValueType::STRING)
         store[key] = Value{.m_type = ValueType::STRING, .m_data = ""};
     std::get<std::string>(store[key].m_data) += value;
-    return true;
+    return std::get<std::string>(store[key].m_data).size();
 }
 
 bool Storage::lpush(size_t db, const std::string& key, const std::string& value) {
@@ -232,11 +232,13 @@ std::vector<std::string> Storage::lrange(size_t db, const std::string& key, int 
     std::shared_lock         lock(m_mutex);
     std::vector<std::string> result;
     auto                     it = m_databases[db].find(key);
+
     if (it == m_databases[db].end() || it->second.m_type != ValueType::LIST || isExpired(it->second))
         return result;
 
     auto& lst  = std::get<std::list<std::string>>(it->second.m_data);
     int   size = static_cast<int>(lst.size());
+
     if (start < 0)
         start = size + start;
     if (stop < 0)
@@ -245,17 +247,18 @@ std::vector<std::string> Storage::lrange(size_t db, const std::string& key, int 
     start = std::max(start, 0);
     stop  = std::min(stop, size - 1);
 
-    if (start > stop)
+    if (start > stop || start >= size)
         return result;
 
     int idx = 0;
-    for (auto& v : lst) {
+    for (const auto& v : lst) {
         if (idx >= start && idx <= stop)
             result.push_back(v);
-        idx++;
         if (idx > stop)
             break;
+        idx++;
     }
+
     return result;
 }
 

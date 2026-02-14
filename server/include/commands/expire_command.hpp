@@ -18,6 +18,6 @@ class ExpireCommand : public ICommand {
 
         bool result = storage.expire(session.db(), key, seconds);
 
-        return Response{.m_type = ResponseType::INTEGER, .m_value = std::to_string(static_cast<int>(result))};
+        return Response{.m_type = ResponseType::INTEGER, .m_value = static_cast<int>(result)};
     }
 };

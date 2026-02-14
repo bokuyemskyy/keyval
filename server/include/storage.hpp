@@ -1,6 +1,8 @@
 #pragma once
 
+// NOLINTBEGIN
 #include <list>
+// NOLINTEND
 #include <optional>
 #include <shared_mutex>
 #include <string>
@@ -30,7 +32,7 @@ class Storage {
     std::optional<std::string> get(size_t db, const std::string& key);
     int                        incr(size_t db, const std::string& key);
     int                        decr(size_t db, const std::string& key);
-    bool                       append(size_t db, const std::string& key, const std::string& value);
+    int                        append(size_t db, const std::string& key, const std::string& value);
 
     bool                     lpush(size_t db, const std::string& key, const std::string& value);
     bool                     rpush(size_t db, const std::string& key, const std::string& value);

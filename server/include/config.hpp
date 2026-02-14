@@ -8,6 +8,7 @@
 
 class Config {
   public:
+    Config() { parseArgs(0, nullptr); };
     Config(int argc, char** argv) { parseArgs(argc, argv); }
 
     std::string get(const std::string& key) const {
@@ -22,6 +23,7 @@ class Config {
     std::unordered_map<std::string, std::string> m_options{
         {"port", "6380"},
     };
+
     void parseArgs(int argc, char** argv) {
         int i = 1;
 
