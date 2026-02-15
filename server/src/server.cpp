@@ -53,7 +53,7 @@ void Server::start() {
         poll.wait(200);
 
         for (const auto& ev : poll.events()) {
-            if (ev.m_fd == listen_socket.fd()) // new connection
+            if (ev.fd == listen_socket.fd()) // new connection
             {
                 try {
                     Socket client_socket = listen_socket.accept();
@@ -72,10 +72,10 @@ void Server::start() {
             } else // existing connection
             {
                 try {
-                    handleClient(ev.m_fd, poll);
+                    handleClient(ev.fd, poll);
                 } catch (const std::exception& e) {
                     Logger::log(LogLevel::ERR, std::string("Error handling client: ") + e.what());
-                    cleanupClient(ev.m_fd, poll);
+                    cleanupClient(ev.fd, poll);
                 }
             }
         }
