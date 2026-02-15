@@ -104,11 +104,20 @@ bool Storage::expire(size_t db, const std::string& key, int seconds) {
 
 int Storage::ttl(size_t db, const std::string& key) {
     std::shared_lock lock(m_mutex);
-    auto             it = m_databases[db].find(key);
-    if (it == m_databases[db].end() || it->second.m_expire_time == 0)
+    if (db >= m_databases.size())
+        return -2;
+    auto& database = m_databases[db];
+    auto  it       = database.find(key);
+    if (it == database.end())
+        return -2;
+    if (it->second.m_expire_time == 0)
         return -1;
-    auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    return std::max<int>(it->second.m_expire_time - now, -1);
+    std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    int         ttl = static_cast<int>(it->second.m_expire_time - now);
+    if (ttl < 0) {
+        return -2;
+    }
+    return ttl;
 }
 
 bool Storage::set(size_t db, const std::string& key, const std::string& value) {

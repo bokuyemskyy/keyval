@@ -46,9 +46,9 @@ TEST_CASE("Server: Integration tests") {
 
         sendCommand("SET expkey val");
         REQUIRE(sendCommand("EXPIRE expkey 1").find("1") != std::string::npos);
-        REQUIRE(sendCommand("TTL expkey").find("1") == std::string::npos);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1100));
-        REQUIRE(sendCommand("TTL expkey").find("-2") == std::string::npos);
+        REQUIRE(sendCommand("TTL expkey").find("1") != std::string::npos);
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        REQUIRE(sendCommand("TTL expkey").find("-2") != std::string::npos);
 
         sendCommand("SET oldkey val");
         REQUIRE(sendCommand("RENAME oldkey newkey").find("OK") != std::string::npos);

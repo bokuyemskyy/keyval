@@ -10,6 +10,6 @@ class TTLCommand : public ICommand {
         const std::string& key = request.m_args[0];
         int                ttl = storage.ttl(session.db(), key);
 
-        return Response{.m_type = ResponseType::INTEGER, .m_value = std::to_string(ttl)};
+        return Response{.m_type = ResponseType::INTEGER, .m_value = ttl};
     }
 };
