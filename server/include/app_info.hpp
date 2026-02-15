@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #ifdef _WIN32
 #include <process.h>
 #define getpid() _getpid()
@@ -45,7 +46,7 @@ void printBanner(const Config& config) {
         "                                   "};
     // clang-format on
     std::vector<std::string> info = {app_info::NAME + " " + app_info::VERSION + " " + app_info::ARCH,
-                                     "Port: " + config.get("port"), "PID: " + std::to_string(getpid()),
+                                     "Port: " + std::to_string(config.port), "PID: " + std::to_string(getpid()),
                                      app_info::WEBSITE};
 
     for (size_t i = 0; i < logo.size(); i++) {

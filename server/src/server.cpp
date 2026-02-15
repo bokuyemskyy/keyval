@@ -40,7 +40,7 @@ void Server::start() {
     listen_socket.create();
     listen_socket.setReuseAddr(true);
     listen_socket.setNonBlocking(true);
-    listen_socket.bind("0.0.0.0", m_config.getInt("port"));
+    listen_socket.bind(m_config.host, m_config.port);
     listen_socket.listen();
 
     EventPoll poll;
@@ -50,7 +50,7 @@ void Server::start() {
     m_running = true;
 
     while (m_running) {
-        poll.wait(500);
+        poll.wait(200);
 
         for (const auto& ev : poll.events()) {
             if (ev.m_fd == listen_socket.fd()) // new connection

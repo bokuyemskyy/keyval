@@ -3,72 +3,69 @@
 #include "logger.hpp"
 
 #include <assert.h>
-#include <fstream>
-#include <unordered_map>
+#include <regex>
+#include <string>
 
 class Config {
   public:
     Config() { parseArgs(0, nullptr); };
     Config(int argc, char** argv) { parseArgs(argc, argv); }
 
-    std::string get(const std::string& key) const {
-        auto it = m_options.find(key);
-        assert(it != m_options.end());
-        return it->second;
-    }
-
-    int getInt(const std::string& key) const { return std::stoi(get(key)); }
+    int         port = 6380;
+    std::string host = "127.0.0.1";
 
   private:
-    std::unordered_map<std::string, std::string> m_options{
-        {"port", "6380"},
-    };
-
     void parseArgs(int argc, char** argv) {
-        int i = 1;
-
-        // first arg: check whether it is an --option or a fileinput
-        if (i < argc && !std::string(argv[i]).starts_with("--")) {
-            loadFile(argv[i]);
-            i++;
-        } else {
-            Logger::log(LogLevel::WARN, "No config file specified.");
+        if (argc > 0 && argv == nullptr) {
+            Logger::log(LogLevel::WARN, "Invalid arguments: argv is null");
+            argc = 0;
         }
 
-        // all the following args
-        for (; i < argc; i++) {
+        for (int i = 1; i < argc; ++i) {
             std::string arg = argv[i];
+            std::string param;
+
             if (arg.starts_with("--")) {
-                std::string key = arg.substr(2);
-                std::string value;
-                // check if there any arg left AND current parameter isnt just a true/false
-                if (i + 1 < argc && argv[i + 1][0] != '-') {
-                    value = argv[++i];
-                } else // the current parameter is a true / false
-                {
-                    value = "true";
+                param = arg.substr(2);
+            } else if (arg.starts_with("-")) {
+                param = arg.substr(1);
+                if (param.size() != 1) {
+                    Logger::log(LogLevel::ERR, "Invalid parameter: " + param);
+                    exit(1);
                 }
-                m_options[key] = value;
             }
-        }
-    }
-    void loadFile(const std::string& path) {
-        std::istream* in = nullptr; // generic pointer to the stream, in which the config will flow
-        std::ifstream file;         // out of "if" scope because will be accessed after
-        if (path != "-") {
-            file.open(path);
-            if (!file) {
-                Logger::log(LogLevel::WARN, "Config file not found.");
-                return;
+
+            if (i + 1 >= argc) {
+                Logger::log(LogLevel::ERR, "No value specified for parameter " + param);
+                exit(1);
             }
-            in = &file; // assign the file stream to the generic pointer
-        } else {
-            in = &std::cin; // assign the stdin
-        }
-        std::string key;
-        std::string value;
-        while (*in >> key >> value) {
-            m_options[key] = value;
+
+            std::string value = argv[++i];
+
+            if (param == "p" || param == "port") {
+                std::regex port_pattern(R"(^\d+$)");
+                if (!std::regex_match(value, port_pattern)) {
+                    Logger::log(LogLevel::ERR, "Invalid port specified: " + value);
+                    exit(1);
+                }
+                port = std::stoi(value);
+
+                if (port < 1 || port > 65535) {
+                    Logger::log(LogLevel::ERR, "Invalid port specified: " + value);
+                    exit(1);
+                }
+            } else if (param == "h" || param == "host") {
+                std::regex ipv4_pattern(
+                    R"(^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)");
+                if (!std::regex_match(value, ipv4_pattern)) {
+                    Logger::log(LogLevel::ERR, "Invalid host specified: " + value);
+                    exit(1);
+                }
+                host = value;
+            } else {
+                Logger::log(LogLevel::ERR, "Invalid parameter " + param);
+                exit(1);
+            }
         }
     }
 };
