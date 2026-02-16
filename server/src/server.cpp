@@ -101,11 +101,11 @@ void Server::stop() {
 void Server::handleClient(int fd, EventPoll& poll) {
     Socket& sock = getSocket(fd);
 
-    std::string   request_raw;
-    socket_size_t bytes = sock.recv(request_raw);
+    std::string request_raw;
+    IoResult    result = sock.recv(request_raw);
 
-    if (bytes <= 0) {
-        if (bytes == 0) {
+    if (result.bytes <= 0) {
+        if (result.bytes == 0) {
             Logger::log(LogLevel::INFO, "Client disconnected: fd=" + std::to_string(fd));
         }
         cleanupClient(fd, poll);
