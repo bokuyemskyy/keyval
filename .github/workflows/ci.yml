@@ -1,4 +1,4 @@
-name: socketpoll CI
+name: CI
 
 on:
     push: 
