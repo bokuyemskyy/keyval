@@ -1,20 +1,21 @@
 # keyval
+[![CI](https://github.com/bokuyemskyy/keyval/actions/workflows/ci.yml/badge.svg)](https://github.com/bokuyemskyy/keyval/actions/workflows/ci.yml)
 
-![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black) ![Windows](https://custom-icon-badges.demolab.com/badge/Windows-0078D6?logo=windows11&logoColor=white) ![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=F0F0F0)
 
 ## Overview
-This project is an in-memory key-value database. Designed as a direct clone of Redis / Valkey. Main purpose is a distributed cache, but can work as a message broker as well.
+An in-memory key-value database built as a simplified clone of Redis / Valkey. Designed primarily as a standalone cache, but also supports message brokering via queue primitives. Networking and I/O polling are handled by a custom cross-platform library developed alongside this project.
 
 ## Screenshots
 <p float="left">
-  <img src="https://github.com/user-attachments/assets/b09b07f2-91a3-4541-b51a-80bc7cbcb056" width="49%" />
-  <img src="https://github.com/user-attachments/assets/7f8f84d0-f4fe-4411-8ca3-2191a0c89bd5" width="49%" />
+  <img src="https://github.com/user-attachments/assets/6147bfe7-baa4-465e-959e-162d1b0b6dfa" width="49%" />
+  <img src="https://github.com/user-attachments/assets/a2500c32-b597-4ff3-b72e-eee93af5ef6c" width="49%" />
 </p>
 
 ## Features
-Utilizes Linux-specific libraries and calls. Asynchronous server is built on `epoll`, using system `socket` calls to establish TCP connections with clients effectively. Fully Redis RESP-protocol compliant, interoperates seamlessly with standard clients such as `valkey-cli`.
+Asynchronous server is event-driven, built on non-blocking poll with system-level socket calls for TCP connection handling. The server is RESP-compliant and interoperates with standard Redis/Valkey clients such as `redis-cli` and `valkey-cli` out of the box.
 
-The table of supported commands
+Supported commands
 | Category        | Commands                                      |
 |-----------------|-----------------------------------------------|
 | Server          | PING, INFO, SHUTDOWN, ECHO                   |
@@ -24,50 +25,45 @@ The table of supported commands
 | Set             | SADD, SREM, SMEMBERS, SISMEMBER, SCARD      |
 
 ## Technical stack
-- Linux API
+- C++23
 - Catch2
-- CMake
+- CMake 3.20
 
 ## Usage
-### Clone the repository
-Clone including the Catch2 submodule:
-```
-git clone --recurse-submodules https://github.com/bokuyemskyy/keyval
-```
-Or clone and update submodules manually:
+**1. Clone the repository**
+
 ```
 git clone https://github.com/bokuyemskyy/keyval
-cd keyval
-git submodule update --init --recursive
 ```
 
-### Compilation
-Generate the build files to `build/`
+**2. Generate the build files to `build/`**
 
-```bash
+```
 cmake -B build
 ```
+Use `-DBUILD_TESTING ON` to enable tests.
 
-Build the project 
-```bash
+**3. Compile**
+
+```
 cmake --build build
 ````
 
-### Run
-Server is available with:
+**4. Run **
+
+Server is available at:
 ```
-./build/server/server [configuration arguments]
+./build/server/keyval-server [-h <host>] [-p <port>]
 ```
-WIP: the client is still developed
-Connect to the server via valkey client
+Connect via the bundled CLI client:
 ```
-valkey-cli -p 6380
+./build/client/keyval-cli [-h <host>] [-p <port>]
 ```
-Or via `socat` or other tool
+Or via `valkey-cli`, `socat` or other tool
 ```bash
 socat - TCP:0.0.0.0:6380
 ```
 
-## Credits
+## References
 - [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/)
 - [Valkey project](https://github.com/valkey-io/valkey)
