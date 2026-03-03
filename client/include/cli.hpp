@@ -12,10 +12,11 @@ class Cli {
     void run();
 
   private:
-    void        setupCompletion();
-    void        setupHints();
-    void        handleLine(const std::string& line);
-    std::string formatResponse(const std::string& resp);
+    void                     setupCompletion();
+    void                     setupHints();
+    void                     handleLine(const std::string& line);
+    std::string              formatResponse(const std::string& resp);
+    std::vector<std::string> tokenize(const std::string& input);
 
     std::string     m_host;
     int             m_port;

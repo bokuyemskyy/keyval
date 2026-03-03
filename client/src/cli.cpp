@@ -68,7 +68,6 @@ void Cli::setupHints() {
         });
 }
 std::string Cli::formatResponse(const std::string& resp) {
-    std::cout << resp;
     if (resp.empty())
         return "";
 
@@ -130,7 +129,9 @@ std::string Cli::formatResponse(const std::string& resp) {
                         remaining = remaining.substr(len_end + 2);
                     } else {
                         std::string value = remaining.substr(len_end + 2, elem_len);
-                        result += "\"" + value + "\"\n";
+                        result += "\"" + value + "\"";
+                        if (i < count - 1)
+                            result += "\n";
                         remaining = remaining.substr(len_end + 2 + elem_len + 2);
                     }
                 }
@@ -149,7 +150,17 @@ void Cli::handleLine(const std::string& line) {
         std::exit(0);
 
     try {
-        std::string request = line + "\r\n";
+        auto tokens = tokenize(line);
+
+        std::ostringstream oss;
+        for (size_t i = 0; i < tokens.size(); ++i) {
+            if (i > 0)
+                oss << " ";
+            oss << tokens[i];
+        }
+
+        std::string request = oss.str() + "\r\n";
+
         m_socket.send(request);
 
         std::string response;
@@ -162,6 +173,35 @@ void Cli::handleLine(const std::string& line) {
     } catch (std::exception const& e) {
         std::cerr << "Error: " << e.what() << "\n";
     }
+}
+
+std::vector<std::string> Cli::tokenize(const std::string& input) {
+    std::vector<std::string> tokens;
+    std::string              current;
+    bool                     in_quotes = false;
+
+    for (size_t i = 0; i < input.size(); ++i) {
+        char c = input[i];
+
+        if (c == '"') {
+            in_quotes = !in_quotes;
+            continue;
+        }
+
+        if (std::isspace(c) && !in_quotes) {
+            if (!current.empty()) {
+                tokens.push_back(current);
+                current.clear();
+            }
+        } else {
+            current += c;
+        }
+    }
+
+    if (!current.empty())
+        tokens.push_back(current);
+
+    return tokens;
 }
 
 void Cli::run() {
